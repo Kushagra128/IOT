@@ -1,0 +1,14 @@
+{
+  "session_name": "session_2_2025-11-14_00-58-19",
+  "user_id": 2,
+  "start_time": "2025-11-14T00:58:21.136857",
+  "stop_time": "2025-11-14T00:58:31.145521",
+  "duration": 10.008632898330688,
+  "sample_rate": 16000,
+  "channels": 1,
+  "vosk_model_path": "K:\\IOT\\Iot-Meeting-Transcriber\\vosk-model-small-en-in-0.4",
+  "wav_file": "session_2_2025-11-14_00-58-19.wav",
+  "transcript_file": "session_2_2025-11-14_00-58-19.txt",
+  "summary_file": "session_2_2025-11-14_00-58-19_summary.txt",
+  "summary_mode": "textrank"
+}

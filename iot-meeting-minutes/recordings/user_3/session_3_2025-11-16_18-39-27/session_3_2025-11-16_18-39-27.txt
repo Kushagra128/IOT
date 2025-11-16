@@ -1,0 +1,15 @@
+Transcript: session_3_2025-11-16_18-39-27
+Started: 2025-11-16 18:39:29
+============================================================
+
+[00:00:03] hello
+[00:00:05] new recording
+[00:00:10] recording in progress speak clearly into your microphones stop
+[00:00:16] like transcripts and waiting for speech start speaking
+[00:00:21] transcript update
+[00:00:23] time
+[00:00:24] three
+
+============================================================
+Total segments: 7
+Duration: 00:00:24
