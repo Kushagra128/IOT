@@ -1,0 +1,211 @@
+================================================================================
+                    📦 WHAT TO SEND TO YOUR RASPBERRY PI
+================================================================================
+
+FOLDERS TO TRANSFER:
+--------------------
+✅ backend/                         (Backend code)
+✅ iot-meeting-minutes/             (Transcription engine)
+
+SCRIPTS TO TRANSFER:
+--------------------
+✅ install_backend_only.sh          (Installation script)
+
+DOCUMENTATION TO TRANSFER (OPTIONAL):
+--------------------------------------
+✅ RASPBERRY_PI_README.txt          (Quick reference)
+✅ RASPBERRY_PI_BACKEND_ONLY.md     (Complete guide)
+✅ UPDATE_VOSK_PATH.txt             (How to update Vosk path)
+✅ QUICK_REFERENCE.md               (Command reference)
+
+================================================================================
+
+❌ DO NOT TRANSFER TO RASPBERRY PI:
+------------------------------------
+❌ frontend/ folder                 (Stays on your laptop)
+❌ node_modules/                    (Not needed on Pi)
+❌ .git/                            (Not needed)
+
+================================================================================
+
+MINIMUM FILES NEEDED ON RASPBERRY PI:
+--------------------------------------
+
+meeting-transcriber/
+├── backend/                        ⭐ REQUIRED
+│   ├── app.py
+│   ├── recording_service.py
+│   ├── database.py
+│   ├── pdf_generator.py
+│   ├── timezone_utils.py
+│   ├── requirements_rpi.txt
+│   └── (all other backend files)
+│
+├── iot-meeting-minutes/            ⭐ REQUIRED
+│   ├── recorder.py
+│   ├── stt_engine.py
+│   ├── summarizer.py
+│   ├── transcript_aggregator.py
+│   ├── logger.py
+│   └── configs/
+│       └── recorder_config.yml     ⭐ UPDATE VOSK PATH HERE
+│
+└── install_backend_only.sh         ⭐ REQUIRED
+
+================================================================================
+
+AFTER TRANSFERRING TO RASPBERRY PI:
+------------------------------------
+
+STEP 1: Install
+---------------
+cd ~/meeting-transcriber
+chmod +x install_backend_only.sh
+./install_backend_only.sh
+
+STEP 2: Update Vosk Model Path
+-------------------------------
+nano iot-meeting-minutes/configs/recorder_config.yml
+
+Change this line:
+    model_path: /home/pi/vosk-model-small-en-us-0.15
+
+To your actual Vosk model location:
+    model_path: /home/pi/YOUR_VOSK_MODEL_PATH
+
+Save: Ctrl+X, Y, Enter
+
+STEP 3: Start Backend
+----------------------
+./start_backend.sh
+
+✅ Done! Backend is running!
+
+================================================================================
+
+WHAT STAYS ON YOUR LAPTOP:
+---------------------------
+
+✅ frontend/ folder
+✅ node_modules/
+✅ All frontend configuration
+
+On your laptop, you will:
+1. Configure frontend with Pi IP
+2. Build frontend: npm run build
+3. Serve frontend: npm run serve
+4. Access at: http://localhost:3000
+
+================================================================================
+
+TRANSFER METHODS:
+-----------------
+
+Method 1: USB Drive
+-------------------
+1. Copy folders to USB drive
+2. Insert USB into Raspberry Pi
+3. Copy to Pi:
+   cp -r /media/pi/*/meeting-transcriber ~/
+
+Method 2: SCP (from laptop)
+---------------------------
+scp -r backend iot-meeting-minutes install_backend_only.sh pi@<pi-ip>:~/meeting-transcriber/
+
+Method 3: Git
+-------------
+# On Raspberry Pi:
+git clone <your-repo> ~/meeting-transcriber
+cd ~/meeting-transcriber
+
+================================================================================
+
+QUICK START AFTER TRANSFER:
+----------------------------
+
+# On Raspberry Pi:
+cd ~/meeting-transcriber
+chmod +x install_backend_only.sh
+./install_backend_only.sh
+
+# Update Vosk path:
+nano iot-meeting-minutes/configs/recorder_config.yml
+
+# Start backend:
+./start_backend.sh
+
+# Note your Pi IP:
+hostname -I
+
+# On your laptop:
+cd frontend
+./configure_frontend.sh
+# Enter Pi IP when prompted
+npm install
+npm run build
+npm run serve
+
+# Open browser:
+http://localhost:3000
+
+================================================================================
+
+FILE SIZES (APPROXIMATE):
+--------------------------
+
+backend/                    ~5 MB
+iot-meeting-minutes/        ~2 MB
+install_backend_only.sh     ~5 KB
+Documentation               ~500 KB
+
+Total (without Vosk model): ~8 MB
+Vosk model (separate):      ~50 MB
+
+================================================================================
+
+VERIFICATION CHECKLIST:
+-----------------------
+
+On Raspberry Pi, you should have:
+✅ backend/ folder with all Python files
+✅ iot-meeting-minutes/ folder with transcription engine
+✅ install_backend_only.sh script
+✅ Your Vosk model (already downloaded)
+
+On your laptop, you should have:
+✅ frontend/ folder
+✅ configure_frontend.sh (or .bat)
+✅ Node.js installed
+
+================================================================================
+
+SUMMARY:
+--------
+
+RASPBERRY PI NEEDS:
+✅ backend/
+✅ iot-meeting-minutes/
+✅ install_backend_only.sh
+✅ Vosk model (you already have it)
+
+LAPTOP NEEDS:
+✅ frontend/
+✅ Node.js
+
+THAT'S IT! Simple and clean! 🎉
+
+================================================================================
+
+NEXT STEPS:
+-----------
+
+1. Transfer backend/ and iot-meeting-minutes/ to Pi
+2. Run: ./install_backend_only.sh
+3. Update Vosk path in config
+4. Start: ./start_backend.sh
+5. Configure laptop frontend
+6. Start recording!
+
+For detailed instructions, see: RASPBERRY_PI_README.txt
+
+================================================================================

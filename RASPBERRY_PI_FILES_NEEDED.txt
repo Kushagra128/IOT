@@ -1,0 +1,52 @@
+================================================================================
+                FILES NEEDED ON RASPBERRY PI (NOT IGNORED)
+================================================================================
+
+✅ REQUIRED FOLDERS:
+--------------------
+backend/                            All Python backend code
+iot-meeting-minutes/                Transcription engine
+
+✅ REQUIRED SCRIPTS:
+--------------------
+install_backend_only.sh             Installation script
+verify_setup.sh                     Verification script
+
+✅ REQUIRED CONFIGURATION:
+--------------------------
+iot-meeting-minutes/configs/recorder_config.yml
+backend/requirements_rpi.txt
+
+✅ OPTIONAL DOCUMENTATION:
+--------------------------
+*.md files                          All markdown documentation
+*.txt files                         All text guides
+
+================================================================================
+
+❌ NOT NEEDED (IGNORED BY .gitignore):
+---------------------------------------
+frontend/                           Runs on laptop, not Pi
+node_modules/                       Not needed on Pi
+*.db files                          Created at runtime
+recordings/                         Generated during use
+vosk-model*/                        Downloaded separately
+venv/                               Created during install
+*.log                               Generated at runtime
+.vscode/                            IDE files
+.idea/                              IDE files
+
+================================================================================
+
+TRANSFER TO RASPBERRY PI:
+--------------------------
+backend/
+iot-meeting-minutes/
+install_backend_only.sh
+verify_setup.sh
+(Optional: documentation files)
+
+Your Vosk model should already be at:
+/home/admin/iot2/models/vosk-model-en-in-0.5
+
+================================================================================

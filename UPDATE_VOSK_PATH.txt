@@ -1,0 +1,145 @@
+================================================================================
+                    📝 HOW TO UPDATE VOSK MODEL PATH
+================================================================================
+
+STEP 1: Find Your Vosk Model Location
+--------------------------------------
+
+On Raspberry Pi, run:
+
+    find ~ -name "vosk-model*" -type d
+
+Example output:
+    /home/pi/vosk-model-small-en-us-0.15
+    /home/pi/Downloads/vosk-model-small-en-in-0.4
+
+Copy the path you want to use!
+
+================================================================================
+
+STEP 2: Edit Configuration File
+--------------------------------
+
+Open the config file:
+
+    nano iot-meeting-minutes/configs/recorder_config.yml
+
+================================================================================
+
+STEP 3: Update model_path Line
+-------------------------------
+
+Find this line (around line 7):
+
+    model_path: /home/pi/vosk-model-small-en-us-0.15
+
+Change it to YOUR model path:
+
+    model_path: /home/pi/YOUR_MODEL_PATH
+
+================================================================================
+
+EXAMPLES:
+---------
+
+If your model is at: /home/pi/vosk-model-small-en-us-0.15
+Use: model_path: /home/pi/vosk-model-small-en-us-0.15
+
+If your model is at: /home/pi/Downloads/vosk-model-small-en-in-0.4
+Use: model_path: /home/pi/Downloads/vosk-model-small-en-in-0.4
+
+If your model is at: /home/pi/meeting-transcriber/vosk-model-small-en-us-0.15
+Use: model_path: /home/pi/meeting-transcriber/vosk-model-small-en-us-0.15
+
+================================================================================
+
+COMPLETE CONFIG FILE EXAMPLE:
+------------------------------
+
+auto_summary_interval_seconds: 0
+block_duration_ms: 500
+channels: 1
+extractive_sentences: 5
+mic_device_name: null
+
+# ⭐ UPDATE THIS LINE WITH YOUR MODEL PATH ⭐
+model_path: /home/pi/vosk-model-small-en-us-0.15
+
+sample_rate: 16000
+save_dir: recordings
+summarizer: ollama
+wav_format: PCM_16
+
+================================================================================
+
+STEP 4: Save and Exit
+----------------------
+
+Press: Ctrl+X
+Press: Y
+Press: Enter
+
+================================================================================
+
+STEP 5: Verify Model Exists
+----------------------------
+
+Check if the model exists at your path:
+
+    ls -la /home/pi/vosk-model-small-en-us-0.15/
+
+You should see these folders:
+    am/
+    conf/
+    graph/
+    ivector/
+
+If you see these folders, your path is correct! ✅
+
+================================================================================
+
+STEP 6: Start Backend
+----------------------
+
+    ./start_backend.sh
+
+If the model path is correct, you'll see:
+
+    ✓ Vosk model found
+    ✓ Model structure valid
+    🚀 PRELOADING VOSK MODEL INTO RAM...
+    ✓ Vosk model successfully preloaded into RAM!
+
+================================================================================
+
+TROUBLESHOOTING:
+----------------
+
+Error: "Vosk model not found"
+→ Check your model path with: ls -la /path/to/your/model
+→ Make sure the path in config matches exactly
+
+Error: "Model structure incomplete"
+→ Your model folder might be corrupted
+→ Re-download the model
+
+Error: "Permission denied"
+→ Make sure you have read access: chmod -R 755 /path/to/model
+
+================================================================================
+
+QUICK REFERENCE:
+----------------
+
+1. Find model:     find ~ -name "vosk-model*" -type d
+2. Edit config:    nano iot-meeting-minutes/configs/recorder_config.yml
+3. Update line:    model_path: /your/model/path
+4. Save:           Ctrl+X, Y, Enter
+5. Verify:         ls -la /your/model/path
+6. Start:          ./start_backend.sh
+
+================================================================================
+
+THAT'S IT! Your Vosk model path is now configured! 🎉
+
+================================================================================

@@ -3,9 +3,8 @@ block_duration_ms: 500
 channels: 1
 extractive_sentences: 5
 mic_device_name: null
-# Update this path to your Vosk model location on Raspberry Pi
-# Example: /home/pi/meeting-transcriber/vosk-model-small-en-us-0.15
-model_path: /home/pi/vosk-model-small-en-us-0.15
+# Vosk model path - configured for your Raspberry Pi
+model_path: /home/admin/iot2/models/vosk-model-en-in-0.5
 sample_rate: 16000
 save_dir: recordings
 # Use ollama (OpenRouter backend) for AI summaries
