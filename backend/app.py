@@ -52,10 +52,11 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 jwt = JWTManager(app)
 db.init_app(app)
 
-# CORS – allow your Vite dev frontend
+# CORS – allow connections from any device on the network
+# This is essential for Raspberry Pi backend + laptop frontend setup
 CORS(
     app,
-    origins=["http://localhost:5173", "http://localhost:3000"],
+    origins="*",  # Allow all origins for network deployment
     supports_credentials=True,
     allow_headers=["Content-Type", "Authorization"],
     methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -635,4 +636,5 @@ def delete_recording(recording_id):
 # -----------------------------------------------------------------------------
 if __name__ == "__main__":
     # Host 0.0.0.0 for cross-device testing on LAN
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    # For Raspberry Pi: Use threaded=True for better performance
+    app.run(debug=True, host="0.0.0.0", port=5000, threaded=True)

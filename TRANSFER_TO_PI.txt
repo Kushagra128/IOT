@@ -1,0 +1,196 @@
+================================================================================
+  TRANSFER THIS ENTIRE FOLDER TO YOUR RASPBERRY PI
+================================================================================
+
+WHAT TO DO:
+-----------
+1. Copy this entire "meeting-transcriber" folder to your Raspberry Pi
+   
+   Methods:
+   - USB Drive: Copy folder to USB, insert into Pi, copy to /home/pi/
+   - SCP: scp -r meeting-transcriber pi@<pi-ip>:~/
+   - Git: Clone your repository on the Pi
+
+2. On Raspberry Pi, open terminal and run:
+   
+   cd ~/meeting-transcriber
+   chmod +x install_rpi.sh
+   ./install_rpi.sh
+
+3. Wait 15-20 minutes for installation to complete
+
+4. Start the backend:
+   
+   ./start_backend.sh
+
+5. On your laptop, configure and start frontend:
+   
+   cd frontend
+   ./configure_frontend.sh  (or configure_frontend.bat on Windows)
+   npm install
+   npm run build
+   npm run serve
+
+6. Open browser: http://localhost:3000
+
+================================================================================
+  DETAILED INSTRUCTIONS
+================================================================================
+
+See these files for complete guides:
+
+📖 START_HERE.md                    - Quick 3-step setup
+📖 RASPBERRY_PI_COMPLETE_GUIDE.md   - Complete Pi setup with troubleshooting
+📖 NETWORK_SETUP.md                 - Network configuration details
+📖 DEPLOYMENT_CHECKLIST.md          - Full deployment checklist
+📖 QUICK_START_NETWORK.md           - 5-minute quick start
+
+================================================================================
+  WHAT'S INCLUDED
+================================================================================
+
+✅ Backend (Flask API)
+   - User authentication
+   - Recording management
+   - Vosk speech-to-text integration
+   - OpenRouter AI summarization (displayed as "Ollama")
+   - PDF generation
+   - Database management
+
+✅ Frontend (React)
+   - Beautiful dark/light mode UI
+   - Real-time transcription display
+   - Recording management
+   - Settings page for backend configuration
+   - PDF preview and download
+   - User dashboard with analytics
+
+✅ Installation Scripts
+   - install_rpi.sh - Automatic Raspberry Pi setup
+   - configure_frontend.sh/bat - Frontend configuration
+   - start_backend.sh - Backend startup script
+   - start_frontend.sh - Frontend startup script
+
+✅ Configuration
+   - recorder_config.yml - Audio and model settings
+   - .env.production - Frontend backend URL
+   - requirements_rpi.txt - Python dependencies
+
+================================================================================
+  SYSTEM REQUIREMENTS
+================================================================================
+
+Raspberry Pi:
+- Raspberry Pi 3B+ or newer (Pi 4/5 recommended)
+- 2GB+ RAM (4GB recommended)
+- Raspberry Pi OS (Debian-based)
+- USB Microphone
+- Internet connection for setup
+- 8GB+ free disk space
+
+Laptop:
+- Windows, Mac, or Linux
+- Node.js 16+ installed
+- Same WiFi network as Raspberry Pi
+- Modern web browser
+
+================================================================================
+  AFTER INSTALLATION
+================================================================================
+
+Your system will work like this:
+
+1. Backend runs on Raspberry Pi (IP: 192.168.1.xxx)
+   - Listens on port 5000
+   - Handles audio recording from USB microphone
+   - Processes speech with Vosk
+   - Generates summaries with AI
+
+2. Frontend runs on your laptop
+   - Accessible at http://localhost:3000
+   - Connects to Pi backend over WiFi
+   - Displays live transcription
+   - Shows summaries and recordings
+
+3. Recording Flow:
+   - Click "Start Recording" on laptop
+   - Speak into microphone (connected to Pi)
+   - See live transcript on laptop screen
+   - Click "Stop Recording"
+   - View transcript and AI summary
+   - Download as PDF
+
+================================================================================
+  QUICK COMMANDS
+================================================================================
+
+On Raspberry Pi:
+----------------
+cd ~/meeting-transcriber
+./start_backend.sh              # Start backend
+hostname -I                     # Get Pi IP address
+arecord -l                      # List microphones
+arecord -d 5 test.wav          # Test microphone
+
+On Laptop:
+----------
+cd frontend
+./configure_frontend.sh         # Configure Pi IP
+npm run build                   # Build frontend
+npm run serve                   # Start frontend
+# Open: http://localhost:3000
+
+================================================================================
+  TROUBLESHOOTING
+================================================================================
+
+Problem: "Cannot connect to backend"
+Solution: 
+  - Check backend is running on Pi: ps aux | grep gunicorn
+  - Verify Pi IP in frontend/.env.production
+  - Test: curl http://<pi-ip>:5000/api/health
+
+Problem: "No microphone detected"
+Solution:
+  - Check USB connection
+  - Run: arecord -l
+  - Test: arecord -d 5 test.wav && aplay test.wav
+
+Problem: "Vosk model not found"
+Solution:
+  - Check: ls ~/meeting-transcriber/vosk-model-small-en-us-0.15/
+  - Re-run: ./install_rpi.sh
+
+Problem: "Frontend can't reach Pi"
+Solution:
+  - Both devices on same WiFi?
+  - Get Pi IP: hostname -I
+  - Update: frontend/.env.production
+  - Rebuild: npm run build
+
+================================================================================
+  SUPPORT FILES
+================================================================================
+
+All documentation is included in this folder:
+
+START_HERE.md                   - Begin here (3 simple steps)
+RASPBERRY_PI_COMPLETE_GUIDE.md  - Full Pi setup guide
+NETWORK_SETUP.md                - Network configuration
+DEPLOYMENT_CHECKLIST.md         - Complete checklist
+QUICK_START_NETWORK.md          - 5-minute setup
+README.md                       - Project overview
+
+================================================================================
+  READY TO START?
+================================================================================
+
+1. Transfer this folder to Raspberry Pi
+2. Run: ./install_rpi.sh
+3. Start backend: ./start_backend.sh
+4. Configure laptop frontend
+5. Start recording!
+
+For detailed instructions, open: START_HERE.md
+
+================================================================================

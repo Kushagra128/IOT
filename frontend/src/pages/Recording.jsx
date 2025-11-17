@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
-import { Mic, Square, ArrowLeft, Loader, Moon, Sun, Activity } from 'lucide-react'
+import { Mic, Square, ArrowLeft, Loader, Moon, Sun, Activity, AlertCircle } from 'lucide-react'
 
 const Recording = () => {
   const { user } = useAuth()
@@ -137,13 +137,18 @@ const Recording = () => {
     if (!sessionId) return
 
     try {
-      const response = await axios.get(`/api/recordings/${sessionId}/transcript`)
+      const response = await axios.get(`/api/recordings/${sessionId}/transcript`, {
+        timeout: 5000 // 5 second timeout
+      })
       if (response.data.transcript) {
         const fullText = response.data.transcript.full_text || ''
         setTranscript(fullText)
       }
     } catch (error) {
-      console.error('Error fetching transcript:', error)
+      // Silently handle errors during polling - backend might be processing
+      if (error.code !== 'ECONNABORTED') {
+        console.error('Error fetching transcript:', error)
+      }
     }
   }
 

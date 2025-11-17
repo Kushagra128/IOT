@@ -6,6 +6,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import Recording from './pages/Recording'
 import RecordingDetail from './pages/RecordingDetail'
+import Settings from './pages/Settings'
 import PrivateRoute from './components/PrivateRoute'
 import MicTest from './pages/MicTest'
 
@@ -37,6 +38,14 @@ function App() {
             element={
               <PrivateRoute>
                 <RecordingDetail />
+              </PrivateRoute>
+            }
+          />
+          <Route
+            path="/settings"
+            element={
+              <PrivateRoute>
+                <Settings />
               </PrivateRoute>
             }
           />

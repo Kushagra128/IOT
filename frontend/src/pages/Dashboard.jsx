@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
-import { Mic, Plus, LogOut, FileText, Clock, Trash2, Download, Eye, Moon, Sun, BarChart3, Timer, MessageSquare } from 'lucide-react'
+import { Mic, Plus, LogOut, FileText, Clock, Trash2, Download, Eye, Moon, Sun, BarChart3, Timer, MessageSquare, Settings as SettingsIcon } from 'lucide-react'
 
 const Dashboard = () => {
   const { user, logout } = useAuth()
@@ -131,6 +131,13 @@ const Dashboard = () => {
               <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Meeting Transcriber</h1>
             </div>
             <div className="flex items-center space-x-4">
+              <button
+                onClick={() => navigate('/settings')}
+                className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+                title="Settings"
+              >
+                <SettingsIcon className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+              </button>
               <button
                 onClick={toggleDarkMode}
                 className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"

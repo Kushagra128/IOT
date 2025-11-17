@@ -33,10 +33,11 @@ class Summarizer:
         self.mode = mode
         self.num_sentences = num_sentences
         
-        # Ollama API configuration (using OpenRouter backend)
+        # OpenRouter API configuration (displayed as "Ollama" to user)
         self.ollama_api_key = "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"
         self.ollama_url = "https://openrouter.ai/api/v1/chat/completions"
         self.model = "openai/gpt-4-turbo"
+        self.display_name = "Ollama"  # Display name for frontend
         
         # Download required NLTK data
         self._download_nltk_data()
@@ -191,7 +192,7 @@ Please provide a detailed summary in plain text:"""
                 # Clean markdown formatting
                 summary = self._clean_markdown(summary)
                 
-                print("   ✓ Summary generated successfully via local Ollama")
+                print("   ✓ Summary generated successfully via Ollama")
                 return summary
             else:
                 print(f"   Warning: Ollama API error (status {response.status_code}): {response.text}")
@@ -320,7 +321,9 @@ Please provide a detailed summary in plain text:"""
             # Write header
             f.write(f"Summary: {session_name}\n")
             f.write(f"Generated: {format_ist(now_ist())} IST\n")
-            f.write(f"Mode: {self.mode}\n")
+            # Display "Ollama" for ollama mode (even though using OpenRouter backend)
+            display_mode = self.display_name if self.mode == 'ollama' else self.mode
+            f.write(f"Mode: {display_mode}\n")
             f.write("=" * 60 + "\n\n")
             
             # Write summary

@@ -1,8 +1,14 @@
 import React, { createContext, useState, useContext, useEffect } from 'react'
 import axios from 'axios'
 
-// Configure axios defaults - use Vite proxy, so no baseURL needed
+// Configure axios baseURL based on environment
+// In development: uses Vite proxy (localhost)
+// In production: connects directly to Raspberry Pi backend
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
+axios.defaults.baseURL = API_BASE_URL
 axios.defaults.headers.common['Content-Type'] = 'application/json'
+
+console.log('API configured to connect to:', API_BASE_URL)
 
 // Add request interceptor to include token in all requests
 axios.interceptors.request.use(

@@ -1,0 +1,42 @@
+# Flask Backend Dependencies - Raspberry Pi 5 Optimized
+
+# Web framework
+Flask>=2.3.0
+flask-cors>=4.0.0
+flask-jwt-extended>=4.5.0
+flask-sqlalchemy>=3.0.0
+
+# Database
+SQLAlchemy>=2.0.0
+
+# Security
+Werkzeug>=2.3.0
+
+# PDF generation
+reportlab>=4.0.0
+
+# Audio recording - ARM-compatible version
+# Note: Install system package first: sudo apt install python3-pyaudio portaudio19-dev
+pyaudio>=0.2.11
+
+# Speech recognition - Vosk (ARM-compatible)
+vosk>=0.3.45
+
+# Natural language processing
+nltk>=3.8
+scikit-learn>=1.0.0
+numpy>=1.21.0
+
+# Configuration
+PyYAML>=6.0
+
+# HTTP requests
+requests>=2.31.0
+
+# Production server
+gunicorn>=21.2.0
+
+# Note: transformers and torch are heavy for Pi
+# Use textrank summarizer instead of t5_small
+# If you really need transformers, install manually:
+# pip install transformers torch --extra-index-url https://download.pytorch.org/whl/cpu
