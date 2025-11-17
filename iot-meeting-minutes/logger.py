@@ -53,8 +53,17 @@ class SessionLogger:
         timestamp = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
         log_line = f"[{timestamp}] [{level}] {message}\n"
         
-        self.file_handle.write(log_line)
-        self.file_handle.flush()
+        # Only write if file is still open
+        if self.file_handle and not self.file_handle.closed:
+            try:
+                self.file_handle.write(log_line)
+                self.file_handle.flush()
+            except (ValueError, IOError):
+                # File already closed, just print to console
+                print(log_line.strip())
+        else:
+            # File closed, print to console
+            print(log_line.strip())
         
         # Track errors
         if level == "ERROR":

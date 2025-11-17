@@ -165,22 +165,23 @@ class RecordingService:
             return None
         
         try:
-            session['logger'].log("Received audio file from laptop")
+            print(f"[RecordingService] Received audio file from laptop for session: {session_id}")
             
             # Save uploaded audio file
             audio_path = os.path.join(session['session_folder'], f"{session['session_name']}_uploaded.webm")
             audio_file.save(audio_path)
             
-            session['logger'].log(f"Audio saved: {audio_path}")
+            print(f"[RecordingService] Audio saved: {audio_path}")
             
             # Convert webm to wav for Vosk
             wav_path = os.path.join(session['session_folder'], f"{session['session_name']}.wav")
             self._convert_to_wav(audio_path, wav_path)
             
-            session['logger'].log(f"Audio converted to WAV: {wav_path}")
+            print(f"[RecordingService] Audio converted to WAV: {wav_path}")
             
             # Mark as uploaded
             session['audio_uploaded'] = True
+            session['processing_complete'] = False
             
             # Start processing in background thread
             processing_thread = threading.Thread(
@@ -190,11 +191,14 @@ class RecordingService:
             )
             processing_thread.start()
             
+            print(f"[RecordingService] Processing thread started for session: {session_id}")
+            
             return True
             
         except Exception as e:
-            session['logger'].log(f"Error processing uploaded audio: {e}", level="ERROR")
             print(f"[RecordingService] Error processing uploaded audio: {e}")
+            import traceback
+            traceback.print_exc()
             return False
     
     def _convert_to_wav(self, input_path, output_path):
@@ -235,7 +239,6 @@ class RecordingService:
             return
         
         try:
-            session['logger'].log("Starting Vosk transcription...")
             print(f"[RecordingService] Processing uploaded audio: {wav_path}")
             
             import wave
@@ -261,7 +264,6 @@ class RecordingService:
                             'type': 'final'
                         })
                         print(f"[STT][final] {text}")
-                        session['logger'].log(f"Transcribed: {text[:50]}...")
             
             # Get final result
             final = json.loads(recognizer.FinalResult())
@@ -275,14 +277,17 @@ class RecordingService:
                 })
                 print(f"[STT][final] {text}")
             
-            session['logger'].log("Transcription complete")
             print(f"[RecordingService] Transcription complete for {session_id}")
             
+            # Mark processing as complete
+            session['processing_complete'] = True
+            
         except Exception as e:
-            session['logger'].log(f"Error during transcription: {e}", level="ERROR")
             print(f"[RecordingService] Error during transcription: {e}")
             import traceback
             traceback.print_exc()
+            session['processing_complete'] = True
+            session['processing_error'] = str(e)
     
     def _process_audio_stream(self, session_id):
         """Process audio stream in background thread"""
@@ -410,20 +415,30 @@ class RecordingService:
             # Wait for audio upload to complete (if not already)
             if not session.get('audio_uploaded'):
                 print("[RecordingService] Waiting for audio upload...")
-                session['logger'].log("Waiting for audio upload from laptop...")
                 # Wait up to 30 seconds for upload
                 for i in range(30):
                     if session.get('audio_uploaded'):
                         break
                     time.sleep(1)
             
-            # Wait a bit more for processing to complete
-            time.sleep(2)
+            # Wait for processing to complete
+            if session.get('audio_uploaded'):
+                print("[RecordingService] Waiting for processing to complete...")
+                # Wait up to 60 seconds for processing
+                for i in range(60):
+                    if session.get('processing_complete'):
+                        print("[RecordingService] Processing complete!")
+                        break
+                    time.sleep(1)
+                    if i % 5 == 0:
+                        print(f"[RecordingService] Still processing... ({i}s)")
             
             # Get transcript
             transcript_text = session['aggregator'].get_full_transcript()
             if not transcript_text.strip():
-                print("[RecordingService] No transcript generated yet")
+                print("[RecordingService] No transcript generated")
+            else:
+                print(f"[RecordingService] Transcript generated: {len(transcript_text)} characters")
             
             # Save transcript (whatever we have)
             transcript_file = session['aggregator'].save_transcript()
@@ -447,8 +462,12 @@ class RecordingService:
             duration = time.time() - session['start_time']
             self._save_metadata(session, duration)
             
-            # Close logger
-            session['logger'].close()
+            # Close logger (safely)
+            try:
+                if 'logger' in session and session['logger']:
+                    session['logger'].close()
+            except Exception as e:
+                print(f"[RecordingService] Error closing logger: {e}")
             
             # Update database
             recording = Recording.query.filter_by(id=session['recording_id']).first()

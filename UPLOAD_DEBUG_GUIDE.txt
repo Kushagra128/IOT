@@ -1,0 +1,255 @@
+================================================================================
+                    🔍 DEBUGGING UPLOAD ISSUES
+================================================================================
+
+COMMON ISSUES AND FIXES:
+-------------------------
+
+1. CORS ERROR
+-------------
+Symptom: "Failed to upload audio" or CORS error in browser console
+
+Fix: Backend already configured for CORS, but check:
+- Backend running: curl http://10.124.101.100:5000/api/health
+- CORS allows all origins in app.py
+
+2. FILE SIZE TOO LARGE
+----------------------
+Symptom: Upload fails after long recording
+
+Fix: Check backend max file size in app.py:
+app.config["MAX_CONTENT_LENGTH"] = 500 * 1024 * 1024  # 500 MB
+
+3. NETWORK TIMEOUT
+------------------
+Symptom: Upload times out
+
+Fix: Increase timeout in frontend:
+timeout: 120000 // 2 minutes
+
+4. SESSION ID MISMATCH
+----------------------
+Symptom: "Session not found" error
+
+Fix: Make sure session_id is passed correctly in URL
+
+================================================================================
+
+DEBUGGING STEPS:
+----------------
+
+STEP 1: Check Browser Console
+------------------------------
+Open browser console (F12) and look for:
+- "Recording stopped, uploading audio..." message
+- Audio blob size (should be > 0)
+- Any error messages
+
+STEP 2: Check Backend Logs
+---------------------------
+On Raspberry Pi, watch logs:
+tail -f /tmp/backend.log
+
+Look for:
+- "[UPLOAD] Receiving audio for session: ..."
+- "[UPLOAD] Received file: ..."
+- Any error messages
+
+STEP 3: Test Upload Manually
+-----------------------------
+Test if upload endpoint works:
+
+curl -X POST \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "audio=@test.webm" \
+  http://10.124.101.100:5000/api/recordings/SESSION_ID/upload
+
+STEP 4: Check File Permissions
+-------------------------------
+On Raspberry Pi:
+ls -la iot-meeting-minutes/recordings/
+chmod -R 755 iot-meeting-minutes/recordings/
+
+================================================================================
+
+WHAT TO CHECK IN BROWSER CONSOLE:
+----------------------------------
+
+1. Recording started:
+   ✓ Recording started on laptop, will upload to Pi when stopped
+
+2. Recording stopped:
+   Recording stopped, uploading audio... XXXXX bytes
+
+3. Upload success:
+   ✓ Audio uploaded successfully
+
+4. If you see error:
+   Failed to upload audio: [error message]
+   
+   Copy the error message and check backend logs
+
+================================================================================
+
+WHAT TO CHECK IN BACKEND LOGS:
+-------------------------------
+
+1. Session started:
+   Session started - waiting for audio upload from laptop
+
+2. Upload received:
+   [UPLOAD] Receiving audio for session: session_xxx
+   [UPLOAD] Received file: recording.webm, size: XXXXX
+
+3. Processing:
+   Audio saved: /path/to/file
+   Audio converted to WAV: /path/to/wav
+   Starting Vosk transcription...
+
+4. If you see error:
+   [UPLOAD ERROR] ...
+   
+   This tells you what went wrong
+
+================================================================================
+
+QUICK FIX CHECKLIST:
+--------------------
+
+✅ Backend running on Pi
+✅ Frontend running on laptop
+✅ Both on same WiFi
+✅ Browser has microphone permission
+✅ Audio is being recorded (timer counting)
+✅ File size > 0 bytes
+✅ No CORS errors in console
+✅ Backend logs show upload received
+
+================================================================================
+
+TEST RECORDING:
+---------------
+
+1. Open browser console (F12)
+2. Click "Start Recording"
+3. Speak for 5 seconds
+4. Click "Stop Recording"
+5. Watch console for messages:
+   - "Recording stopped, uploading audio..."
+   - Audio size should be shown
+   - "✓ Audio uploaded successfully"
+
+6. If upload fails:
+   - Check error message in console
+   - Check backend logs on Pi
+   - Verify network connection
+
+================================================================================
+
+MANUAL TEST:
+------------
+
+Create a test file to verify upload works:
+
+1. Record a short audio in browser
+2. Save as test.webm
+3. Get your JWT token from browser localStorage
+4. Test upload:
+
+curl -X POST \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN" \
+  -F "audio=@test.webm" \
+  http://10.124.101.100:5000/api/recordings/YOUR_SESSION_ID/upload
+
+If this works, the issue is in the frontend code.
+If this fails, the issue is in the backend.
+
+================================================================================
+
+COMMON ERROR MESSAGES:
+----------------------
+
+"No audio file provided"
+→ Frontend not sending file correctly
+→ Check FormData in browser console
+
+"Invalid token"
+→ JWT token expired or invalid
+→ Try logging out and back in
+
+"Session not found"
+→ Session ID mismatch
+→ Check session_id in URL matches active session
+
+"Failed to process audio"
+→ Backend processing error
+→ Check backend logs for details
+
+"Network Error"
+→ Cannot reach backend
+→ Check Pi IP address and network
+
+================================================================================
+
+ENABLE VERBOSE LOGGING:
+-----------------------
+
+In frontend Recording.jsx, add more console.logs:
+
+console.log('Session ID:', sessionId)
+console.log('Audio blob:', audioBlob)
+console.log('FormData:', formData)
+console.log('Upload URL:', `/api/recordings/${sessionId}/upload`)
+
+In backend app.py, already added verbose logging:
+- [UPLOAD] messages show what's happening
+- Check /tmp/backend.log for details
+
+================================================================================
+
+IF STILL NOT WORKING:
+---------------------
+
+1. Restart backend on Pi:
+   pkill -f gunicorn
+   ./start_backend.sh
+
+2. Clear browser cache:
+   Ctrl+Shift+Delete → Clear cache
+
+3. Restart frontend:
+   Ctrl+C
+   npm run dev
+
+4. Try in different browser:
+   Chrome, Firefox, Edge
+
+5. Check firewall:
+   sudo ufw status
+   sudo ufw allow 5000/tcp
+
+================================================================================
+
+WORKING FLOW:
+-------------
+
+When everything works, you should see:
+
+Browser Console:
+✓ Recording started on laptop, will upload to Pi when stopped
+Recording stopped, uploading audio... 245678 bytes
+✓ Audio uploaded successfully
+Waiting for upload to complete...
+Telling backend to process...
+
+Backend Logs:
+Session started - waiting for audio upload from laptop
+[UPLOAD] Receiving audio for session: session_4_2025-11-17_19-00-00
+[UPLOAD] Received file: recording.webm, size: 245678
+Audio saved: /path/to/file.webm
+Audio converted to WAV: /path/to/file.wav
+Starting Vosk transcription...
+[STT][final] hello world
+Transcription complete
+
+================================================================================

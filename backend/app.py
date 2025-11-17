@@ -314,29 +314,43 @@ def start_recording():
         return jsonify({"error": str(e)}), 500
 
 
-@app.route("/api/recordings/<session_id>/upload", methods=["POST"])
-@jwt_required()
+@app.route("/api/recordings/<session_id>/upload", methods=["POST", "OPTIONS"])
+@jwt_required(optional=True)  # Make JWT optional for OPTIONS
 def upload_audio(session_id):
     """Receive audio file from laptop and process it"""
+    # Handle OPTIONS request for CORS
+    if request.method == "OPTIONS":
+        return jsonify({"status": "ok"}), 200
+    
     try:
         user_id = get_current_user_id()
         if not user_id:
             return jsonify({"error": "Invalid token"}), 401
 
+        print(f"[UPLOAD] Receiving audio for session: {session_id}")
+        print(f"[UPLOAD] Files in request: {list(request.files.keys())}")
+        print(f"[UPLOAD] Content-Type: {request.content_type}")
+
         if 'audio' not in request.files:
+            print("[UPLOAD ERROR] No 'audio' field in request.files")
             return jsonify({"error": "No audio file provided"}), 400
 
         audio_file = request.files['audio']
         
         if audio_file.filename == '':
+            print("[UPLOAD ERROR] Empty filename")
             return jsonify({"error": "Empty filename"}), 400
+
+        print(f"[UPLOAD] Received file: {audio_file.filename}, size: {audio_file.content_length}")
 
         # Process the uploaded audio
         result = recording_service.process_uploaded_audio(session_id, user_id, audio_file)
         
         if not result:
+            print("[UPLOAD ERROR] process_uploaded_audio returned False")
             return jsonify({"error": "Failed to process audio"}), 500
 
+        print(f"[UPLOAD] Successfully processed audio for session: {session_id}")
         return jsonify({
             "message": "Audio uploaded and queued for processing",
             "session_id": session_id

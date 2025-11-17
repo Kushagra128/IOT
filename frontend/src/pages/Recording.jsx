@@ -95,6 +95,14 @@ const Recording = () => {
         }
       }
 
+      // Start backend session FIRST
+      const response = await axios.post('/api/recordings/start', {
+        title: `Recording ${new Date().toLocaleString()}`
+      })
+
+      const newSessionId = response.data.session_id
+      setSessionId(newSessionId)
+
       mediaRecorder.onstop = async () => {
         // Stop all tracks
         stream.getTracks().forEach(track => track.stop())
@@ -102,20 +110,30 @@ const Recording = () => {
         // Create audio blob
         const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
         
+        console.log('Recording stopped, uploading audio...', audioBlob.size, 'bytes')
+        
         // Upload to backend for processing
-        await uploadAudioToBackend(audioBlob)
+        try {
+          const formData = new FormData()
+          formData.append('audio', audioBlob, 'recording.webm')
+
+          await axios.post(`/api/recordings/${newSessionId}/upload`, formData, {
+            headers: {
+              'Content-Type': 'multipart/form-data'
+            },
+            timeout: 120000 // 2 minute timeout
+          })
+
+          console.log('✓ Audio uploaded successfully')
+        } catch (error) {
+          console.error('Failed to upload audio:', error)
+          setError('Failed to upload audio: ' + (error.response?.data?.error || error.message))
+        }
       }
-
-      // Start backend session
-      const response = await axios.post('/api/recordings/start', {
-        title: `Recording ${new Date().toLocaleString()}`
-      })
-
-      setSessionId(response.data.session_id)
       
       // Store mediaRecorder for later
       window.currentMediaRecorder = mediaRecorder
-      window.currentAudioChunks = audioChunks
+      window.currentSessionId = newSessionId
 
       // Start recording
       mediaRecorder.start(1000) // Capture in 1-second chunks
@@ -139,27 +157,7 @@ const Recording = () => {
     }
   }
 
-  const uploadAudioToBackend = async (audioBlob) => {
-    try {
-      console.log('Uploading audio to Raspberry Pi...', audioBlob.size, 'bytes')
-      
-      const formData = new FormData()
-      formData.append('audio', audioBlob, 'recording.webm')
-      formData.append('session_id', sessionId)
 
-      await axios.post(`/api/recordings/${sessionId}/upload`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        timeout: 120000 // 2 minute timeout for upload
-      })
-
-      console.log('✓ Audio uploaded successfully')
-    } catch (error) {
-      console.error('Failed to upload audio:', error)
-      setError('Failed to upload audio to backend')
-    }
-  }
 
   const stopRecording = async () => {
     if (loading || !sessionId) return
@@ -182,10 +180,12 @@ const Recording = () => {
         window.currentMediaRecorder.stop()
       }
 
-      // Wait a bit for upload to complete
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      // Wait for upload to complete (increased time)
+      console.log('Waiting for upload to complete...')
+      await new Promise(resolve => setTimeout(resolve, 5000))
 
       // Tell backend to process the uploaded audio
+      console.log('Telling backend to process...')
       const response = await axios.post(`/api/recordings/${sessionId}/stop`)
 
       if (response.data.recording?.id) {
