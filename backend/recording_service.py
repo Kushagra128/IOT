@@ -84,7 +84,7 @@ class RecordingService:
             }
     
     def start_session(self, user_id, title):
-        """Start a new recording session"""
+        """Start a new recording session (laptop will upload audio)"""
         session_timestamp = now_ist().strftime("%Y-%m-%d_%H-%M-%S")
         session_id = f"session_{user_id}_{session_timestamp}"
         
@@ -112,17 +112,11 @@ class RecordingService:
         db.session.commit()
         
         try:
-            # Initialize components
-            recorder = AudioRecorder(
-                self.config,
-                session_folder,
-                session_id
-            )
-            
+            # Initialize components (no recorder needed - laptop records)
             stt_engine = VoskSTTEngine(
                 self.config['model_path'],
                 self.config['sample_rate'],
-                preloaded_model=self.preloaded_model  # Use preloaded model for instant start!
+                preloaded_model=self.preloaded_model
             )
             
             aggregator = TranscriptAggregator(
@@ -137,32 +131,23 @@ class RecordingService:
             
             logger = SessionLogger(session_folder, session_id)
             
-            # Start recording
-            recorder.start()
-            
-            # Store session data
+            # Store session data (no recorder, no processing thread)
             self.active_sessions[session_id] = {
                 'user_id': user_id,
                 'recording_id': recording.id,
                 'session_folder': session_folder,
                 'session_name': session_id,
-                'recorder': recorder,
                 'stt_engine': stt_engine,
                 'aggregator': aggregator,
                 'summarizer': summarizer,
                 'logger': logger,
                 'start_time': time.time(),
                 'running': True,
-                'transcript': []
+                'transcript': [],
+                'audio_uploaded': False
             }
             
-            # Start processing thread
-            processing_thread = threading.Thread(
-                target=self._process_audio_stream,
-                args=(session_id,),
-                daemon=True
-            )
-            processing_thread.start()
+            logger.log("Session started - waiting for audio upload from laptop")
             
             return session_id
             
@@ -171,6 +156,133 @@ class RecordingService:
             recording.status = 'failed'
             db.session.commit()
             raise Exception(f"Failed to start recording: {str(e)}")
+    
+    def process_uploaded_audio(self, session_id, user_id, audio_file):
+        """Process audio file uploaded from laptop"""
+        session = self.active_sessions.get(session_id)
+        
+        if not session or session['user_id'] != user_id:
+            return None
+        
+        try:
+            session['logger'].log("Received audio file from laptop")
+            
+            # Save uploaded audio file
+            audio_path = os.path.join(session['session_folder'], f"{session['session_name']}_uploaded.webm")
+            audio_file.save(audio_path)
+            
+            session['logger'].log(f"Audio saved: {audio_path}")
+            
+            # Convert webm to wav for Vosk
+            wav_path = os.path.join(session['session_folder'], f"{session['session_name']}.wav")
+            self._convert_to_wav(audio_path, wav_path)
+            
+            session['logger'].log(f"Audio converted to WAV: {wav_path}")
+            
+            # Mark as uploaded
+            session['audio_uploaded'] = True
+            
+            # Start processing in background thread
+            processing_thread = threading.Thread(
+                target=self._process_uploaded_wav,
+                args=(session_id, wav_path),
+                daemon=True
+            )
+            processing_thread.start()
+            
+            return True
+            
+        except Exception as e:
+            session['logger'].log(f"Error processing uploaded audio: {e}", level="ERROR")
+            print(f"[RecordingService] Error processing uploaded audio: {e}")
+            return False
+    
+    def _convert_to_wav(self, input_path, output_path):
+        """Convert audio file to WAV format for Vosk"""
+        try:
+            import subprocess
+            
+            # Use ffmpeg to convert
+            cmd = [
+                'ffmpeg', '-i', input_path,
+                '-ar', '16000',  # 16kHz sample rate
+                '-ac', '1',       # Mono
+                '-f', 'wav',      # WAV format
+                '-y',             # Overwrite
+                output_path
+            ]
+            
+            subprocess.run(cmd, check=True, capture_output=True)
+            print(f"[RecordingService] Converted {input_path} to {output_path}")
+            
+        except Exception as e:
+            print(f"[RecordingService] FFmpeg conversion failed: {e}")
+            # Fallback: try with pydub
+            try:
+                from pydub import AudioSegment
+                audio = AudioSegment.from_file(input_path)
+                audio = audio.set_frame_rate(16000).set_channels(1)
+                audio.export(output_path, format='wav')
+                print(f"[RecordingService] Converted using pydub")
+            except Exception as e2:
+                print(f"[RecordingService] Pydub conversion also failed: {e2}")
+                raise
+    
+    def _process_uploaded_wav(self, session_id, wav_path):
+        """Process the uploaded WAV file with Vosk"""
+        session = self.active_sessions.get(session_id)
+        if not session:
+            return
+        
+        try:
+            session['logger'].log("Starting Vosk transcription...")
+            print(f"[RecordingService] Processing uploaded audio: {wav_path}")
+            
+            import wave
+            from vosk import KaldiRecognizer
+            
+            wf = wave.open(wav_path, "rb")
+            recognizer = KaldiRecognizer(session['stt_engine'].model, wf.getframerate())
+            recognizer.SetWords(True)
+            
+            while True:
+                data = wf.readframes(4000)
+                if len(data) == 0:
+                    break
+                    
+                if recognizer.AcceptWaveform(data):
+                    result = json.loads(recognizer.Result())
+                    if result.get('text'):
+                        text = result['text']
+                        session['aggregator'].add_segment(text, result.get('result', []))
+                        session['transcript'].append({
+                            'text': text,
+                            'timestamp': datetime.now().isoformat(),
+                            'type': 'final'
+                        })
+                        print(f"[STT][final] {text}")
+                        session['logger'].log(f"Transcribed: {text[:50]}...")
+            
+            # Get final result
+            final = json.loads(recognizer.FinalResult())
+            if final.get('text'):
+                text = final['text']
+                session['aggregator'].add_segment(text, final.get('result', []))
+                session['transcript'].append({
+                    'text': text,
+                    'timestamp': datetime.now().isoformat(),
+                    'type': 'final'
+                })
+                print(f"[STT][final] {text}")
+            
+            session['logger'].log("Transcription complete")
+            print(f"[RecordingService] Transcription complete for {session_id}")
+            
+        except Exception as e:
+            session['logger'].log(f"Error during transcription: {e}", level="ERROR")
+            print(f"[RecordingService] Error during transcription: {e}")
+            import traceback
+            traceback.print_exc()
     
     def _process_audio_stream(self, session_id):
         """Process audio stream in background thread"""
@@ -291,27 +403,27 @@ class RecordingService:
         try:
             session['running'] = False
             
-            # Stop recorder
-            session['recorder'].stop()
+            # Stop recorder (if exists - old flow)
+            if 'recorder' in session:
+                session['recorder'].stop()
             
-            # Try to get final streaming result
-            try:
-                final_result = session['stt_engine'].get_final_result()
-                if final_result and final_result.get('text'):
-                    print(f"[STT][stream-final] {final_result['text']}")
-                    session['aggregator'].add_segment(final_result['text'], final_result.get('words'))
-            except Exception as e:
-                print(f"Warning: Could not get final STT result: {e}")
-                session['logger'].log(f"Warning: Could not get final STT result: {e}", level="WARNING")
+            # Wait for audio upload to complete (if not already)
+            if not session.get('audio_uploaded'):
+                print("[RecordingService] Waiting for audio upload...")
+                session['logger'].log("Waiting for audio upload from laptop...")
+                # Wait up to 30 seconds for upload
+                for i in range(30):
+                    if session.get('audio_uploaded'):
+                        break
+                    time.sleep(1)
             
-            # If still no transcript, run offline transcription on WAV
+            # Wait a bit more for processing to complete
+            time.sleep(2)
+            
+            # Get transcript
             transcript_text = session['aggregator'].get_full_transcript()
             if not transcript_text.strip():
-                print("[RecordingService] No transcript text detected from streaming STT – trying offline transcription from WAV...")
-                self._offline_transcribe_from_wav(session)
-                transcript_text = session['aggregator'].get_full_transcript()
-                if not transcript_text.strip():
-                    print("[RecordingService] Offline transcription also produced no text.")
+                print("[RecordingService] No transcript generated yet")
             
             # Save transcript (whatever we have)
             transcript_file = session['aggregator'].save_transcript()

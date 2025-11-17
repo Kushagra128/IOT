@@ -36,6 +36,12 @@ requests>=2.31.0
 # Production server
 gunicorn>=21.2.0
 
+# Audio processing (for converting uploaded audio)
+pydub>=0.25.1
+
+# Note: Also install ffmpeg system package:
+# sudo apt install ffmpeg
+
 # Note: transformers and torch are heavy for Pi
 # Use textrank summarizer instead of t5_small
 # If you really need transformers, install manually:

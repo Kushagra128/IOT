@@ -46,7 +46,8 @@ sudo apt install -y \
     g++ \
     make \
     wget \
-    unzip
+    unzip \
+    ffmpeg
 
 # Setup backend
 echo -e "${GREEN}[3/6] Setting up backend...${NC}"

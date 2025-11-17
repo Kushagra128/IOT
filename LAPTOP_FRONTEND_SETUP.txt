@@ -1,0 +1,231 @@
+================================================================================
+                    💻 LAPTOP FRONTEND SETUP GUIDE
+================================================================================
+
+YOUR RASPBERRY PI BACKEND IS RUNNING! ✅
+Backend URL: http://10.124.101.100:5000
+
+Now configure and start the frontend on your laptop:
+
+================================================================================
+
+STEP 1: VERIFY CONFIGURATION (Already Done!)
+---------------------------------------------
+
+✅ frontend/.env.production created
+✅ frontend/.env.development created
+✅ Both configured with: VITE_API_URL=http://10.124.101.100:5000
+
+================================================================================
+
+STEP 2: INSTALL DEPENDENCIES
+-----------------------------
+
+Open terminal on your laptop and run:
+
+cd frontend
+npm install
+
+This will install all required packages.
+⏱️ Takes 2-3 minutes
+
+================================================================================
+
+STEP 3: START FRONTEND
+-----------------------
+
+Choose ONE of these methods:
+
+METHOD A: Development Mode (Recommended for testing)
+----------------------------------------------------
+npm run dev
+
+Frontend will start at: http://localhost:5173
+✅ Hot reload enabled (changes update automatically)
+✅ Good for development and testing
+
+METHOD B: Production Mode (Recommended for regular use)
+--------------------------------------------------------
+npm run build
+npm run serve
+
+Frontend will start at: http://localhost:3000
+✅ Optimized build
+✅ Faster performance
+✅ Production-ready
+
+================================================================================
+
+STEP 4: OPEN IN BROWSER
+------------------------
+
+Open your web browser and go to:
+
+Development mode: http://localhost:5173
+Production mode:  http://localhost:3000
+
+You should see the Meeting Transcriber login page!
+
+================================================================================
+
+STEP 5: TEST CONNECTION
+------------------------
+
+1. Click on Settings (gear icon) in the top right
+2. You should see: "Connected successfully!"
+3. If not, check:
+   - Backend is running on Pi: http://10.124.101.100:5000
+   - Both devices on same WiFi network
+   - Firewall not blocking port 5000
+
+================================================================================
+
+STEP 6: START RECORDING!
+-------------------------
+
+1. Register a new account (or login if you already have one)
+2. Click "New Recording"
+3. Click "Start Recording"
+4. Speak into the microphone (connected to Raspberry Pi)
+5. Watch live transcript appear on your laptop screen!
+6. Click "Stop Recording" when done
+7. View transcript and AI summary
+
+================================================================================
+
+QUICK COMMANDS REFERENCE:
+--------------------------
+
+# Install dependencies
+cd frontend
+npm install
+
+# Development mode (hot reload)
+npm run dev
+# Open: http://localhost:5173
+
+# Production mode (optimized)
+npm run build
+npm run serve
+# Open: http://localhost:3000
+
+# Test backend connection
+curl http://10.124.101.100:5000/api/health
+
+# Should return: {"status":"healthy","message":"API is running"}
+
+================================================================================
+
+TROUBLESHOOTING:
+----------------
+
+Problem: "Cannot connect to backend"
+Solution: 
+  1. Check backend is running on Pi
+  2. Verify IP: http://10.124.101.100:5000/api/health
+  3. Check both devices on same WiFi
+  4. Check firewall settings
+
+Problem: "npm install fails"
+Solution:
+  1. Check Node.js installed: node --version
+  2. Update npm: npm install -g npm@latest
+  3. Clear cache: npm cache clean --force
+  4. Try again: npm install
+
+Problem: "Port already in use"
+Solution:
+  1. Kill existing process
+  2. Use different port: npm run dev -- --port 5174
+
+Problem: "Module not found"
+Solution:
+  1. Delete node_modules: rm -rf node_modules
+  2. Delete package-lock.json: rm package-lock.json
+  3. Reinstall: npm install
+
+================================================================================
+
+SYSTEM ARCHITECTURE:
+--------------------
+
+Your Laptop                       Raspberry Pi
+(Your IP)                         (10.124.101.100)
+┌─────────────────┐               ┌──────────────────────────┐
+│  Frontend       │               │  Backend                 │
+│  Port: 5173     │──── HTTP ────▶│  Port: 5000              │
+│  or 3000        │   Request     │                          │
+│                 │               │  ✅ Running!             │
+│  • React UI     │               │  • Flask API             │
+│  • Dashboard    │◀──── JSON ────│  • Vosk STT              │
+│  • Controls     │   Response    │  • OpenRouter AI         │
+│                 │               │  • 🎤 USB Mic            │
+│                 │               │  • Database              │
+│                 │               │                          │
+│                 │               │  Vosk Model:             │
+│                 │               │  /home/admin/iot2/       │
+│                 │               │  models/vosk-model-      │
+│                 │               │  en-in-0.5               │
+└─────────────────┘               └──────────────────────────┘
+
+================================================================================
+
+WHAT HAPPENS WHEN YOU RECORD:
+------------------------------
+
+1. You click "Start Recording" on laptop
+2. Frontend sends: POST http://10.124.101.100:5000/api/recordings/start
+3. Pi backend starts recording from USB microphone
+4. Vosk processes audio in real-time
+5. Frontend polls every 2 seconds: GET /api/recordings/{id}/transcript
+6. Live transcript appears on your laptop screen
+7. You click "Stop Recording"
+8. Backend generates AI summary
+9. Frontend displays complete transcript + summary
+10. You can download as PDF
+
+================================================================================
+
+CONFIGURATION FILES:
+--------------------
+
+frontend/.env.production
+------------------------
+VITE_API_URL=http://10.124.101.100:5000
+
+frontend/.env.development
+-------------------------
+VITE_API_URL=http://10.124.101.100:5000
+
+Both files are already configured! ✅
+
+================================================================================
+
+NEXT STEPS:
+-----------
+
+1. ✅ Backend running on Pi: http://10.124.101.100:5000
+2. ✅ Frontend configured with Pi IP
+3. 🔄 Install dependencies: npm install
+4. 🔄 Start frontend: npm run dev
+5. 🔄 Open browser: http://localhost:5173
+6. 🔄 Register/Login
+7. 🔄 Start recording!
+
+================================================================================
+
+YOU'RE ALMOST THERE! 🎉
+-----------------------
+
+Your backend is running perfectly on Raspberry Pi!
+Now just run these commands on your laptop:
+
+cd frontend
+npm install
+npm run dev
+
+Then open: http://localhost:5173
+
+Start recording meetings! 🎤📝
+
+================================================================================

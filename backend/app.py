@@ -314,6 +314,41 @@ def start_recording():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/recordings/<session_id>/upload", methods=["POST"])
+@jwt_required()
+def upload_audio(session_id):
+    """Receive audio file from laptop and process it"""
+    try:
+        user_id = get_current_user_id()
+        if not user_id:
+            return jsonify({"error": "Invalid token"}), 401
+
+        if 'audio' not in request.files:
+            return jsonify({"error": "No audio file provided"}), 400
+
+        audio_file = request.files['audio']
+        
+        if audio_file.filename == '':
+            return jsonify({"error": "Empty filename"}), 400
+
+        # Process the uploaded audio
+        result = recording_service.process_uploaded_audio(session_id, user_id, audio_file)
+        
+        if not result:
+            return jsonify({"error": "Failed to process audio"}), 500
+
+        return jsonify({
+            "message": "Audio uploaded and queued for processing",
+            "session_id": session_id
+        }), 200
+
+    except Exception as e:
+        import traceback
+        print("[UPLOAD AUDIO ERROR]", e)
+        traceback.print_exc()
+        return jsonify({"error": str(e)}), 500
+
+
 @app.route("/api/recordings/<session_id>/stop", methods=["POST"])
 @jwt_required()
 def stop_recording(session_id):

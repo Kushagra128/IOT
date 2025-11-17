@@ -72,19 +72,54 @@ const Recording = () => {
       setLoading(true)
       setError('')
 
-      // ✔ FIRST: Browser permission
-      const allowed = await requestMicPermission()
-      if (!allowed) {
-        setLoading(false)
-        return
+      // Get microphone permission and start recording locally
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        audio: {
+          channelCount: 1,
+          sampleRate: 16000,
+          echoCancellation: true,
+          noiseSuppression: true
+        } 
+      })
+
+      // Create MediaRecorder to capture audio
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      })
+
+      const audioChunks = []
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunks.push(event.data)
+        }
       }
 
-      // ✔ THEN: Backend starts recording
+      mediaRecorder.onstop = async () => {
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop())
+
+        // Create audio blob
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' })
+        
+        // Upload to backend for processing
+        await uploadAudioToBackend(audioBlob)
+      }
+
+      // Start backend session
       const response = await axios.post('/api/recordings/start', {
         title: `Recording ${new Date().toLocaleString()}`
       })
 
       setSessionId(response.data.session_id)
+      
+      // Store mediaRecorder for later
+      window.currentMediaRecorder = mediaRecorder
+      window.currentAudioChunks = audioChunks
+
+      // Start recording
+      mediaRecorder.start(1000) // Capture in 1-second chunks
+
       setIsRecording(true)
       setLoading(false)
       setRecordingTime(0)
@@ -96,9 +131,33 @@ const Recording = () => {
       timerIntervalRef.current = setInterval(() => {
         setRecordingTime(prev => prev + 1)
       }, 1000)
+
+      console.log('✓ Recording started on laptop, will upload to Pi when stopped')
     } catch (error) {
-      setError(error.response?.data?.error || 'Failed to start recording')
+      setError(error.response?.data?.error || error.message || 'Failed to start recording')
       setLoading(false)
+    }
+  }
+
+  const uploadAudioToBackend = async (audioBlob) => {
+    try {
+      console.log('Uploading audio to Raspberry Pi...', audioBlob.size, 'bytes')
+      
+      const formData = new FormData()
+      formData.append('audio', audioBlob, 'recording.webm')
+      formData.append('session_id', sessionId)
+
+      await axios.post(`/api/recordings/${sessionId}/upload`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        },
+        timeout: 120000 // 2 minute timeout for upload
+      })
+
+      console.log('✓ Audio uploaded successfully')
+    } catch (error) {
+      console.error('Failed to upload audio:', error)
+      setError('Failed to upload audio to backend')
     }
   }
 
@@ -118,6 +177,15 @@ const Recording = () => {
       setLoading(true)
       setIsRecording(false)
 
+      // Stop the MediaRecorder (this triggers upload)
+      if (window.currentMediaRecorder && window.currentMediaRecorder.state !== 'inactive') {
+        window.currentMediaRecorder.stop()
+      }
+
+      // Wait a bit for upload to complete
+      await new Promise(resolve => setTimeout(resolve, 2000))
+
+      // Tell backend to process the uploaded audio
       const response = await axios.post(`/api/recordings/${sessionId}/stop`)
 
       if (response.data.recording?.id) {

@@ -1,0 +1,137 @@
+================================================================================
+                    🚀 START FRONTEND ON YOUR LAPTOP NOW!
+================================================================================
+
+YOUR BACKEND IS RUNNING! ✅
+Raspberry Pi: http://10.124.101.100:5000
+
+================================================================================
+
+EASIEST WAY - ONE COMMAND:
+---------------------------
+
+Windows:
+--------
+Double-click: start_frontend_laptop.bat
+
+OR open Command Prompt and run:
+start_frontend_laptop.bat
+
+Mac/Linux:
+----------
+chmod +x start_frontend_laptop.sh
+./start_frontend_laptop.sh
+
+================================================================================
+
+MANUAL WAY (If script doesn't work):
+-------------------------------------
+
+cd frontend
+npm install
+npm run dev
+
+Then open: http://localhost:5173
+
+================================================================================
+
+WHAT YOU'LL SEE:
+----------------
+
+After running the command, you'll see:
+
+  VITE v5.x.x  ready in xxx ms
+
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://192.168.x.x:5173/
+  ➜  press h + enter to show help
+
+✅ Frontend is running!
+
+================================================================================
+
+OPEN IN BROWSER:
+----------------
+
+Open your web browser and go to:
+http://localhost:5173
+
+You should see the Meeting Transcriber login page!
+
+================================================================================
+
+FIRST TIME SETUP:
+-----------------
+
+1. Register a new account
+   - Username: your_name
+   - Email: your@email.com
+   - Password: your_password
+
+2. Login with your credentials
+
+3. Go to Settings (gear icon)
+   - Should show: "Connected successfully!"
+   - Backend URL: http://10.124.101.100:5000
+
+4. Click "New Recording"
+
+5. Click "Start Recording"
+
+6. Speak into microphone (connected to Raspberry Pi)
+
+7. Watch live transcript appear!
+
+8. Click "Stop Recording"
+
+9. View transcript and AI summary
+
+================================================================================
+
+TROUBLESHOOTING:
+----------------
+
+Problem: "npm: command not found"
+Solution: Install Node.js from https://nodejs.org/
+
+Problem: "Cannot connect to backend"
+Solution: 
+  - Check backend running on Pi
+  - Test: curl http://10.124.101.100:5000/api/health
+  - Both devices on same WiFi?
+
+Problem: "Port 5173 already in use"
+Solution: 
+  - Kill existing process
+  - Or use: npm run dev -- --port 5174
+
+================================================================================
+
+QUICK TEST:
+-----------
+
+Test backend connection from your laptop:
+
+curl http://10.124.101.100:5000/api/health
+
+Should return:
+{"status":"healthy","message":"API is running"}
+
+If this works, your frontend will connect successfully!
+
+================================================================================
+
+YOU'RE READY! 🎉
+----------------
+
+Backend: ✅ Running on Raspberry Pi (10.124.101.100:5000)
+Frontend: 🔄 Start on your laptop now!
+
+Run: start_frontend_laptop.bat (Windows)
+Or:  ./start_frontend_laptop.sh (Mac/Linux)
+
+Then open: http://localhost:5173
+
+Start recording meetings! 🎤📝
+
+================================================================================
