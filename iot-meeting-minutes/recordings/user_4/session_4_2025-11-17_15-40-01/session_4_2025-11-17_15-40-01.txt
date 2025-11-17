@@ -1,0 +1,11 @@
+Transcript: session_4_2025-11-17_15-40-01
+Started: 2025-11-17 15:40:02
+============================================================
+
+[00:00:04] okay
+[00:00:25] so we are working on a meeting at risk driver this is the india's first of its kind that is locally transcribing all the things which we are telling and all the locals assimilation is happening inside that this device only we're using watch model for a speech to text we are using our alambagh for summarization generation and we are using faster
+[00:00:46] yay for connection from back-end and front-end for the frontend we have use react framework on that it is all working and this we have made capability to make all a record four hours of meetings and it is live transcribing we can you can show you him or letting it is transcribing in the pipe and only whatever we are seeing
+
+============================================================
+Total segments: 3
+Duration: 00:00:46

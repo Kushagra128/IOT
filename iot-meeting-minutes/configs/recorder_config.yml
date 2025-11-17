@@ -3,8 +3,8 @@ block_duration_ms: 500
 channels: 1
 extractive_sentences: 5
 mic_device_name: null
-model_path: K:\IOT\Iot-Meeting-Transcriber\vosk-model-small-en-in-0.4
+model_path: D:\PROGRAMING\7th sem 7\iot\vosk\vosk-model-en-in-0.5
 sample_rate: 16000
 save_dir: recordings
-summarizer: textrank
+summarizer: ollama
 wav_format: PCM_16

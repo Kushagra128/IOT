@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext'
 import axios from 'axios'
-import { Mic, Square, ArrowLeft, Loader } from 'lucide-react'
+import { Mic, Square, ArrowLeft, Loader, Moon, Sun, Activity } from 'lucide-react'
 
 const Recording = () => {
   const { user } = useAuth()
@@ -12,7 +12,25 @@ const Recording = () => {
   const [transcript, setTranscript] = useState('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [recordingTime, setRecordingTime] = useState(0)
+  const [darkMode, setDarkMode] = useState(() => {
+    return localStorage.getItem('darkMode') === 'true'
+  })
   const transcriptIntervalRef = useRef(null)
+  const timerIntervalRef = useRef(null)
+
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add('dark')
+    } else {
+      document.documentElement.classList.remove('dark')
+    }
+    localStorage.setItem('darkMode', darkMode)
+  }, [darkMode])
+
+  const toggleDarkMode = () => {
+    setDarkMode(!darkMode)
+  }
 
   useEffect(() => {
     return () => {
@@ -20,8 +38,18 @@ const Recording = () => {
         clearInterval(transcriptIntervalRef.current)
         transcriptIntervalRef.current = null
       }
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+        timerIntervalRef.current = null
+      }
     }
   }, [])
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60)
+    const secs = seconds % 60
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
 
   // ⭐ NEW: Ask browser for mic permission BEFORE backend starts recording
   const requestMicPermission = async () => {
@@ -59,9 +87,15 @@ const Recording = () => {
       setSessionId(response.data.session_id)
       setIsRecording(true)
       setLoading(false)
+      setRecordingTime(0)
 
       // Start polling for live transcript
       transcriptIntervalRef.current = setInterval(fetchTranscript, 2000)
+      
+      // Start timer
+      timerIntervalRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1)
+      }, 1000)
     } catch (error) {
       setError(error.response?.data?.error || 'Failed to start recording')
       setLoading(false)
@@ -75,6 +109,10 @@ const Recording = () => {
       if (transcriptIntervalRef.current) {
         clearInterval(transcriptIntervalRef.current)
         transcriptIntervalRef.current = null
+      }
+      if (timerIntervalRef.current) {
+        clearInterval(timerIntervalRef.current)
+        timerIntervalRef.current = null
       }
 
       setLoading(true)
@@ -110,20 +148,30 @@ const Recording = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-200">
       {/* Header */}
-      <header className="bg-white shadow-sm">
+      <header className="bg-white dark:bg-gray-800 shadow-sm transition-colors duration-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <button
               onClick={() => navigate('/dashboard')}
-              className="flex items-center space-x-2 text-gray-600 hover:text-gray-900"
+              className="flex items-center space-x-2 text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white"
             >
               <ArrowLeft className="w-5 h-5" />
               <span>Back to Dashboard</span>
             </button>
-            <h1 className="text-2xl font-bold text-gray-900">New Recording</h1>
-            <div className="w-32"></div>
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">New Recording</h1>
+            <button
+              onClick={toggleDarkMode}
+              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              title={darkMode ? 'Light mode' : 'Dark mode'}
+            >
+              {darkMode ? (
+                <Sun className="w-5 h-5 text-yellow-500" />
+              ) : (
+                <Moon className="w-5 h-5 text-gray-600" />
+              )}
+            </button>
           </div>
         </div>
       </header>
@@ -131,33 +179,42 @@ const Recording = () => {
       {/* Main */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 px-4 py-3 rounded">
             {error}
           </div>
         )}
 
-        <div className="bg-white rounded-lg shadow-lg p-8">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-8 transition-colors duration-200">
           <div className="text-center mb-8">
             <div
-              className={`inline-flex items-center justify-center w-32 h-32 rounded-full mb-6 ${
-                isRecording ? 'bg-red-100 animate-pulse' : 'bg-gray-100'
+              className={`inline-flex items-center justify-center w-32 h-32 rounded-full mb-6 transition-all duration-300 ${
+                isRecording ? 'bg-red-100 dark:bg-red-900/30 animate-pulse' : 'bg-gray-100 dark:bg-gray-700'
               }`}
             >
               {isRecording ? (
-                <Mic className="w-16 h-16 text-red-600" />
+                <Mic className="w-16 h-16 text-red-600 dark:text-red-400" />
               ) : (
-                <Mic className="w-16 h-16 text-gray-400" />
+                <Mic className="w-16 h-16 text-gray-400 dark:text-gray-500" />
               )}
             </div>
 
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">
               {isRecording ? 'Recording in Progress...' : 'Ready to Record'}
             </h2>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               {isRecording
                 ? 'Speak clearly into your microphone. Click stop when finished.'
                 : 'Click the button below to start recording your meeting'}
             </p>
+            
+            {isRecording && (
+              <div className="mt-4 flex items-center justify-center space-x-2">
+                <Activity className="w-5 h-5 text-red-600 dark:text-red-400 animate-pulse" />
+                <span className="text-2xl font-mono font-bold text-gray-900 dark:text-white">
+                  {formatTime(recordingTime)}
+                </span>
+              </div>
+            )}
           </div>
 
           <div className="flex justify-center space-x-4 mb-8">
@@ -202,21 +259,28 @@ const Recording = () => {
 
           {isRecording && (
             <div className="mt-8">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">
-                Live Transcript
-              </h3>
-              <div className="bg-gray-50 rounded-lg p-6 min-h-[300px] max-h-[500px] overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white flex items-center">
+                  <Activity className="w-5 h-5 mr-2 text-primary-600 dark:text-primary-400" />
+                  Live Transcript
+                </h3>
+                <span className="text-sm text-gray-500 dark:text-gray-400">
+                  {transcript.split(' ').filter(w => w).length} words
+                </span>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-6 min-h-[300px] max-h-[500px] overflow-y-auto border border-gray-200 dark:border-gray-700 transition-colors duration-200">
                 {transcript ? (
-                  <p className="text-gray-800 whitespace-pre-wrap leading-relaxed">
+                  <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed">
                     {transcript}
                   </p>
                 ) : (
-                  <p className="text-gray-400 italic">
+                  <p className="text-gray-400 dark:text-gray-500 italic text-center py-12">
                     Waiting for speech... Start speaking to see transcription here.
                   </p>
                 )}
               </div>
-              <p className="text-sm text-gray-500 mt-2">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 flex items-center">
+                <span className="inline-block w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
                 Transcript updates in real-time as you speak
               </p>
             </div>

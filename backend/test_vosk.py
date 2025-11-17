@@ -4,7 +4,7 @@ import json
 from vosk import Model, KaldiRecognizer
 
 # Paths
-MODEL_PATH = os.path.join("..", "vosk-model-small-en-in-0.4")
+MODEL_PATH = "D:\PROGRAMING\7th sem 7\iot\vosk\vosk-model-en-in-0.5"
 AUDIO_FILE = "mic_test.wav"   # the file you just recorded with test_mic.py
 
 

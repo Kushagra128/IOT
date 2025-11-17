@@ -13,6 +13,10 @@ import json
 import wave
 import yaml
 
+# Add backend directory to path for timezone_utils
+sys.path.insert(0, os.path.dirname(__file__))
+from timezone_utils import now_ist, format_ist
+
 # Add parent directory to path
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', 'iot-meeting-minutes'))
 
@@ -30,6 +34,29 @@ class RecordingService:
         """Initialize recording service"""
         self.active_sessions = {}  # session_id -> session_data
         self.config = self._load_config()
+        self.preloaded_model = None  # Preloaded Vosk model
+        
+        # Preload Vosk model into RAM
+        self._preload_vosk_model()
+    
+    def _preload_vosk_model(self):
+        """Preload Vosk model into RAM on startup"""
+        try:
+            from vosk import Model
+            print("\n" + "="*60)
+            print("🚀 PRELOADING VOSK MODEL INTO RAM...")
+            print("="*60)
+            print(f"   Model path: {self.config['model_path']}")
+            
+            self.preloaded_model = Model(self.config['model_path'])
+            
+            print("   ✓ Vosk model successfully preloaded into RAM!")
+            print("   ✓ Recording will start instantly when you click 'Start'")
+            print("="*60 + "\n")
+        except Exception as e:
+            print(f"   ⚠️  Warning: Could not preload Vosk model: {e}")
+            print("   Model will be loaded on first recording start")
+            self.preloaded_model = None
         
     def _load_config(self):
         """Load configuration"""
@@ -47,22 +74,18 @@ class RecordingService:
         else:
             # Default config
             return {
-                'model_path': os.path.join(
-                    os.path.dirname(__file__),
-                    '..',
-                    'vosk-model-small-en-in-0.4'
-                ),
+                'model_path': "D:\PROGRAMING\7th sem 7\iot\vosk\vosk-model-en-in-0.5",
                 'sample_rate': 16000,
                 'channels': 1,
                 'block_duration_ms': 500,
                 'save_dir': 'recordings',
-                'summarizer': 'textrank',
+                'summarizer': 'ollama',
                 'extractive_sentences': 5
             }
     
     def start_session(self, user_id, title):
         """Start a new recording session"""
-        session_timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        session_timestamp = now_ist().strftime("%Y-%m-%d_%H-%M-%S")
         session_id = f"session_{user_id}_{session_timestamp}"
         
         # Create user-specific recording directory
@@ -98,7 +121,8 @@ class RecordingService:
             
             stt_engine = VoskSTTEngine(
                 self.config['model_path'],
-                self.config['sample_rate']
+                self.config['sample_rate'],
+                preloaded_model=self.preloaded_model  # Use preloaded model for instant start!
             )
             
             aggregator = TranscriptAggregator(
@@ -365,11 +389,15 @@ class RecordingService:
             f"{session['session_name']}_meta.json"
         )
         
+        # Calculate IST times
+        start_ist = datetime.fromtimestamp(session['start_time'])
+        stop_ist = now_ist()
+        
         metadata = {
             'session_name': session['session_name'],
             'user_id': session['user_id'],
-            'start_time': datetime.fromtimestamp(session['start_time']).isoformat(),
-            'stop_time': datetime.now().isoformat(),
+            'start_time': format_ist(start_ist),
+            'stop_time': format_ist(stop_ist),
             'duration': duration,
             'sample_rate': self.config['sample_rate'],
             'channels': self.config['channels'],
@@ -377,7 +405,8 @@ class RecordingService:
             'wav_file': f"{session['session_name']}.wav",
             'transcript_file': f"{session['session_name']}.txt",
             'summary_file': f"{session['session_name']}_summary.txt",
-            'summary_mode': self.config['summarizer']
+            'summary_mode': self.config['summarizer'],
+            'timezone': 'IST (UTC+5:30)'
         }
         
         with open(meta_file, 'w') as f:

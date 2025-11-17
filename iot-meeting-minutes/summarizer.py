@@ -1,11 +1,19 @@
 """
 Summarizer Module
-Generates summaries using TextRank (extractive) or T5 (abstractive)
+Generates summaries using Local Ollama AI or TextRank (extractive fallback)
 """
 
 import os
+import sys
 from datetime import datetime
+import requests
+import re
 import nltk
+
+# Add backend directory to path for timezone_utils
+backend_path = os.path.join(os.path.dirname(__file__), '..', 'backend')
+sys.path.insert(0, backend_path)
+from timezone_utils import now_ist, format_ist
 from nltk.tokenize import sent_tokenize
 from nltk.corpus import stopwords
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -14,16 +22,21 @@ import numpy as np
 
 
 class Summarizer:
-    def __init__(self, mode='textrank', num_sentences=5):
+    def __init__(self, mode='ollama', num_sentences=5):
         """
         Initialize summarizer
         
         Args:
-            mode: 'textrank' for extractive or 't5_small' for abstractive
-            num_sentences: Number of sentences for extractive summary
+            mode: 'ollama' for local AI, 'textrank' for extractive, or 't5_small' for abstractive
+            num_sentences: Number of sentences for extractive summary (fallback)
         """
         self.mode = mode
         self.num_sentences = num_sentences
+        
+        # Ollama API configuration (using OpenRouter backend)
+        self.ollama_api_key = "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"
+        self.ollama_url = "https://openrouter.ai/api/v1/chat/completions"
+        self.model = "openai/gpt-4-turbo"
         
         # Download required NLTK data
         self._download_nltk_data()
@@ -80,11 +93,118 @@ class Summarizer:
         if not text or len(text.strip()) < 50:
             return "Text too short to summarize."
         
-        if self.mode == 'textrank':
+        if self.mode == 'ollama':
+            return self._ollama_summary(text)
+        elif self.mode == 'textrank':
             return self._textrank_summary(text)
         elif self.mode == 't5_small':
             return self._t5_summary(text)
         else:
+            return self._textrank_summary(text)
+    
+    def _clean_markdown(self, text):
+        """
+        Remove markdown formatting from text to show clean output
+        
+        Args:
+            text: Text with markdown formatting
+            
+        Returns:
+            str: Clean text without markdown
+        """
+        # Remove bold (**text** or __text__)
+        text = re.sub(r'\*\*(.+?)\*\*', r'\1', text)
+        text = re.sub(r'__(.+?)__', r'\1', text)
+        
+        # Remove italic (*text* or _text_)
+        text = re.sub(r'\*(.+?)\*', r'\1', text)
+        text = re.sub(r'_(.+?)_', r'\1', text)
+        
+        # Remove headers (### text or ## text or # text)
+        text = re.sub(r'^#{1,6}\s+', '', text, flags=re.MULTILINE)
+        
+        # Remove code blocks (```text```)
+        text = re.sub(r'```.*?```', '', text, flags=re.DOTALL)
+        
+        # Remove inline code (`text`)
+        text = re.sub(r'`(.+?)`', r'\1', text)
+        
+        # Clean up extra whitespace
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        
+        return text.strip()
+    
+    def _ollama_summary(self, text):
+        """
+        Generate descriptive summary using local Ollama AI model
+        
+        Args:
+            text: Input text (transcription)
+            
+        Returns:
+            str: Detailed descriptive summary (clean, no markdown)
+        """
+        try:
+            headers = {
+                "Authorization": f"Bearer {self.ollama_api_key}",
+                "Content-Type": "application/json"
+            }
+            
+            prompt = f"""You are an expert meeting summarizer. Please analyze the following meeting transcription and provide a comprehensive, descriptive summary.
+
+The summary should include:
+1. Main topics discussed
+2. Key points and decisions made
+3. Action items (if any)
+4. Important details and context
+5. Overall meeting outcome
+
+Please make the summary as descriptive and detailed as possible while remaining clear and organized. Use plain text format without any markdown formatting (no **, ##, or other special characters).
+
+Transcription:
+{text}
+
+Please provide a detailed summary in plain text:"""
+            
+            payload = {
+                "model": self.model,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": prompt
+                    }
+                ]
+            }
+            
+            print("   Generating summary using local Ollama AI model...")
+            response = requests.post(
+                self.ollama_url,
+                headers=headers,
+                json=payload,
+                timeout=60
+            )
+            
+            if response.status_code == 200:
+                result = response.json()
+                summary = result['choices'][0]['message']['content']
+                
+                # Clean markdown formatting
+                summary = self._clean_markdown(summary)
+                
+                print("   ✓ Summary generated successfully via local Ollama")
+                return summary
+            else:
+                print(f"   Warning: Ollama API error (status {response.status_code}): {response.text}")
+                print("   Falling back to TextRank...")
+                return self._textrank_summary(text)
+                
+        except requests.exceptions.Timeout:
+            print("   Warning: Ollama request timed out")
+            print("   Falling back to TextRank...")
+            return self._textrank_summary(text)
+        except Exception as e:
+            print(f"   Warning: Ollama failed: {e}")
+            print("   Falling back to TextRank...")
             return self._textrank_summary(text)
     
     def _textrank_summary(self, text):
@@ -199,7 +319,7 @@ class Summarizer:
         with open(summary_file, 'w', encoding='utf-8') as f:
             # Write header
             f.write(f"Summary: {session_name}\n")
-            f.write(f"Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n")
+            f.write(f"Generated: {format_ist(now_ist())} IST\n")
             f.write(f"Mode: {self.mode}\n")
             f.write("=" * 60 + "\n\n")
             

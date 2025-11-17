@@ -54,7 +54,7 @@ class SessionController:
         os.makedirs('configs', exist_ok=True)
         
         default_config = {
-            'model_path': 'K:\IOT\Iot-Meeting-Transcriber\vosk-model-small-en-in-0.4',
+            'model_path': 'D:\PROGRAMING\7th sem 7\iot\vosk\vosk-model-en-in-0.5',
             'sample_rate': 16000,
             'channels': 1,
             'block_duration_ms': 500,

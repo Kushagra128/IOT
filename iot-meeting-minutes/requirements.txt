@@ -14,6 +14,9 @@ numpy>=1.21.0
 # Configuration
 PyYAML>=6.0
 
+# HTTP requests for Ollama AI
+requests>=2.31.0
+
 transformers
 # Optional: For T5 abstractive summarization (heavier, better quality)
 # Uncomment if you want to use t5_small mode

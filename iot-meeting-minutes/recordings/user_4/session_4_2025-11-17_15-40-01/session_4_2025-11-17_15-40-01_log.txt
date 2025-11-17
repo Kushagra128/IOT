@@ -1,0 +1,14 @@
+============================================================
+Session Log: session_4_2025-11-17_15-40-01
+Started: 2025-11-17 15:40:02
+============================================================
+
+[2025-11-17 15:40:06] [INFO] Transcribed: okay...
+[2025-11-17 15:40:28] [INFO] Transcribed: so we are working on a meeting at risk driver this...
+[2025-11-17 15:40:48] [INFO] Transcribed: yay for connection from back-end and front-end for...
+[2025-11-17 15:41:09] [ERROR] Error during processing: can't subtract offset-naive and offset-aware datetimes
+
+============================================================
+Session ended: 2025-11-17 15:41:20
+Total errors: 1
+============================================================

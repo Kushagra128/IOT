@@ -3,7 +3,7 @@
 
 # Path to your Vosk model directory (REQUIRED - update this!)
 # Download models from: https://alphacephei.com/vosk/models
-model_path: D:\PROGRAMING\7th sem 7\iot\vosk\vosk-model-small-en-in-0.4
+model_path: D:\PROGRAMING\7th sem 7\iot\vosk\vosk-model-en-in-0.5
 
 # Audio settings
 sample_rate: 16000        # Sample rate in Hz (16000 recommended for Vosk)

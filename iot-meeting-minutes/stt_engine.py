@@ -8,24 +8,29 @@ from vosk import Model, KaldiRecognizer
 
 
 class VoskSTTEngine:
-    def __init__(self, model_path, sample_rate):
+    def __init__(self, model_path, sample_rate, preloaded_model=None):
         """
         Initialize Vosk STT engine
         
         Args:
             model_path: Path to Vosk model directory
             sample_rate: Audio sample rate (must match recorder)
+            preloaded_model: Optional preloaded Vosk Model object (for instant start)
         """
         self.model_path = model_path
         self.sample_rate = sample_rate
         
-        # Load Vosk model
-        print(f"   Loading Vosk model from: {model_path}")
-        try:
-            self.model = Model(model_path)
-            print(f"   ✓ Vosk model loaded successfully")
-        except Exception as e:
-            raise Exception(f"Failed to load Vosk model: {e}")
+        # Use preloaded model if available, otherwise load it
+        if preloaded_model is not None:
+            print(f"   ✓ Using preloaded Vosk model (instant start!)")
+            self.model = preloaded_model
+        else:
+            print(f"   Loading Vosk model from: {model_path}")
+            try:
+                self.model = Model(model_path)
+                print(f"   ✓ Vosk model loaded successfully")
+            except Exception as e:
+                raise Exception(f"Failed to load Vosk model: {e}")
         
         # Create recognizer
         self.recognizer = KaldiRecognizer(self.model, sample_rate)

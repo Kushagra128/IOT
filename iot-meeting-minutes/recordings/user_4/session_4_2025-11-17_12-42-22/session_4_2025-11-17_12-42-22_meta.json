@@ -1,0 +1,14 @@
+{
+  "session_name": "session_4_2025-11-17_12-42-22",
+  "user_id": 4,
+  "start_time": "2025-11-17T12:42:27.140261",
+  "stop_time": "2025-11-17T12:42:56.133042",
+  "duration": 28.992756605148315,
+  "sample_rate": 16000,
+  "channels": 1,
+  "vosk_model_path": "D:\\PROGRAMING\\7th sem 7\\iot\\vosk\\vosk-model-en-in-0.5",
+  "wav_file": "session_4_2025-11-17_12-42-22.wav",
+  "transcript_file": "session_4_2025-11-17_12-42-22.txt",
+  "summary_file": "session_4_2025-11-17_12-42-22_summary.txt",
+  "summary_mode": "textrank"
+}

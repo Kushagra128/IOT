@@ -4,7 +4,13 @@ Collects and manages transcript segments with timestamps
 """
 
 import os
+import sys
 from datetime import datetime, timedelta
+
+# Add backend directory to path for timezone_utils
+backend_path = os.path.join(os.path.dirname(__file__), '..', 'backend')
+sys.path.insert(0, backend_path)
+from timezone_utils import now_ist, format_ist
 
 
 class TranscriptAggregator:
@@ -21,7 +27,7 @@ class TranscriptAggregator:
         
         # Transcript data
         self.segments = []
-        self.start_time = datetime.now()
+        self.start_time = now_ist()
         
         # File path
         self.transcript_file = os.path.join(
@@ -30,7 +36,7 @@ class TranscriptAggregator:
         )
         
         # Partial save tracking
-        self.last_save_time = datetime.now()
+        self.last_save_time = now_ist()
         self.save_interval = timedelta(seconds=30)  # Save every 30 seconds
     
     def add_segment(self, text, words=None):
@@ -45,7 +51,7 @@ class TranscriptAggregator:
             return
         
         # Calculate elapsed time
-        elapsed = datetime.now() - self.start_time
+        elapsed = now_ist() - self.start_time
         timestamp = self._format_timestamp(elapsed.total_seconds())
         
         # Create segment
@@ -59,7 +65,7 @@ class TranscriptAggregator:
         self.segments.append(segment)
         
         # Periodic save
-        if datetime.now() - self.last_save_time >= self.save_interval:
+        if now_ist() - self.last_save_time >= self.save_interval:
             self._save_partial()
     
     def _format_timestamp(self, seconds):
@@ -82,7 +88,7 @@ class TranscriptAggregator:
         """Save partial transcript to disk"""
         try:
             self._write_transcript(self.transcript_file + '.partial')
-            self.last_save_time = datetime.now()
+            self.last_save_time = now_ist()
         except Exception as e:
             print(f"   Warning: Could not save partial transcript: {e}")
     
@@ -171,4 +177,4 @@ class TranscriptAggregator:
     def clear(self):
         """Clear all segments"""
         self.segments = []
-        self.start_time = datetime.now()
+        self.start_time = now_ist()

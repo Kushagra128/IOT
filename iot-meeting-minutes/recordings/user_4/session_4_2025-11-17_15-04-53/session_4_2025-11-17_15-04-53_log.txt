@@ -1,0 +1,15 @@
+============================================================
+Session Log: session_4_2025-11-17_15-04-53
+Started: 2025-11-17 15:04:53
+============================================================
+
+[2025-11-17 15:05:03] [INFO] Transcribed: meeting a truck driver that is working my phone or...
+[2025-11-17 15:05:13] [INFO] Transcribed: based upon what model of a speech to text and also...
+[2025-11-17 15:05:21] [INFO] Transcribed: this model was very good with our work and this ha...
+[2025-11-17 15:05:42] [INFO] Transcribed: for much what we are doing that rather than just m...
+[2025-11-17 15:05:45] [ERROR] Error during processing: can't subtract offset-naive and offset-aware datetimes
+
+============================================================
+Session ended: 2025-11-17 15:06:15
+Total errors: 1
+============================================================
