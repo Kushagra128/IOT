@@ -9,6 +9,7 @@ sample_rate: 16000
 save_dir: recordings
 # Summarizer mode (uses OpenRouter API internally)
 summarizer: ollama
-# OpenRouter model for summarization
-openrouter_model: qwen/qwen-2.5-1.5b-instruct
+# OpenRouter model for summarization (intelligent repair + summary)
+# Options: qwen/qwen-2.5-7b-instruct (better), qwen/qwen-2.5-1.5b-instruct (faster)
+openrouter_model: qwen/qwen-2.5-7b-instruct
 wav_format: PCM_16

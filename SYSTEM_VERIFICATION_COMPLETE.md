@@ -13,17 +13,17 @@
 │  │  1. Record audio │              │  4. Receive WebM     │ │
 │  │     from browser │              │                      │ │
 │  │                  │              │  5. Convert to WAV   │ │
-│  │  2. Upload WebM  │──── HTTP ───▶│                      │ │
+│  │  2. Upload WebM  │─── HTTP ───▶│                      │ │
 │  │     to Pi        │   multipart  │  6. Vosk STT         │ │
 │  │                  │              │     (preloaded)      │ │
 │  │  3. Wait for     │              │                      │ │
-│  │     processing   │              │  7. OpenRouter API   │ │
-│  │                  │              │     summarization    │ │
-│  │  8. Display      │◀──── JSON ───│                      │ │
+│  │     processing   │              │  7.OLLAMA(Lamma 1b)  │ │
+│  │                  │              │                      │ │
+│  │  8. Display      │◀──── JSON ───│                     │ │
 │  │     results      │   response   │  9. Save to DB       │ │
 │  │                  │              │                      │ │
 │  └──────────────────┘              └──────────────────────┘ │
-│                                                               │
+│                                                             │
 └─────────────────────────────────────────────────────────────┘
 ```
 

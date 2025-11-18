@@ -24,7 +24,7 @@ from timezone_utils import now_ist, format_ist
 class OpenRouterSummarizer:
     """OpenRouter API-based summarizer"""
     
-    def __init__(self, model="qwen/qwen-2.5-1.5b-instruct"):
+    def __init__(self, model="qwen/qwen-2.5-7b-instruct"):
         """
         Initialize OpenRouter summarizer
         
@@ -60,6 +60,66 @@ class OpenRouterSummarizer:
             text = text[-self.max_chars:]  # Take last 4000 chars
         
         try:
+            # Determine transcript length for appropriate summary style
+            word_count = len(text.split())
+            
+            # Create adaptive system prompt based on transcript length
+            if word_count < 100:
+                # Short transcript: concise summary
+                system_prompt = """You are an intelligent meeting summarizer and transcript repair specialist.
+
+The transcript you receive is from speech-to-text (Vosk STT) and contains imperfections:
+- Missing words or incomplete phrases
+- Grammar errors and typos
+- Abrupt transitions
+- Noisy fragments or unclear segments
+
+YOUR TASK (2 steps):
+1. REPAIR: Mentally reconstruct what the speaker actually meant by:
+   - Fixing grammar and spelling
+   - Filling reasonable gaps in meaning
+   - Smoothing abrupt transitions
+   - Expanding missing connectors for coherence
+   - Preserving the speaker's original intent
+
+2. SUMMARIZE: Produce a clear, polished summary (3-5 sentences) that:
+   - Captures the main point and key context
+   - Uses proper grammar and complete sentences
+   - Reflects what was actually said (no hallucinations)
+   - Is concise but meaningful
+
+Output only the final summary, not the repair process."""
+
+            else:
+                # Long transcript: structured summary
+                system_prompt = """You are an intelligent meeting summarizer and transcript repair specialist.
+
+The transcript you receive is from speech-to-text (Vosk STT) and contains imperfections:
+- Missing words or incomplete phrases
+- Grammar errors and typos
+- Abrupt transitions
+- Noisy fragments or unclear segments
+
+YOUR TASK (2 steps):
+1. REPAIR: Mentally reconstruct what the speaker actually meant by:
+   - Fixing grammar and spelling
+   - Filling reasonable gaps in meaning
+   - Smoothing abrupt transitions
+   - Expanding missing connectors for coherence
+   - Preserving the speaker's original intent
+
+2. SUMMARIZE: Produce a well-structured summary with:
+   • Main topics discussed (use bullet points)
+   • Key points and important context
+   • Decisions or conclusions reached
+   • Action items or next steps (if mentioned)
+   
+Format: Use bullet points for clarity. Write as much as needed to capture the content fully.
+Quality: Clear, polished language with proper grammar.
+Accuracy: Only infer what's reasonable from the text - no hallucinations.
+
+Output only the final summary, not the repair process."""
+            
             headers = {
                 "Authorization": f"Bearer {self.api_key}",
                 "HTTP-Referer": "http://localhost",
@@ -72,11 +132,11 @@ class OpenRouterSummarizer:
                 "messages": [
                     {
                         "role": "system",
-                        "content": "You are a meeting summarizer. Summarize the following transcript clearly and concisely in as much as required sentences, filll the gaps in meetign adn write it better in paragraph form. Focus on key points, decisions, and action items."
+                        "content": system_prompt
                     },
                     {
                         "role": "user",
-                        "content": text
+                        "content": f"Raw STT Transcript:\n\n{text}\n\nPlease repair and summarize this transcript."
                     }
                 ]
             }
@@ -153,8 +213,8 @@ class Summarizer:
         self.num_sentences = num_sentences
         self.display_name = "Ollama"  # Display name for logs
         
-        # Get model from environment or use default
-        self.model = os.environ.get('OPENROUTER_MODEL', 'qwen/qwen-2.5-1.5b-instruct')
+        # Get model from environment or use default (7B for better quality)
+        self.model = os.environ.get('OPENROUTER_MODEL', 'qwen/qwen-2.5-7b-instruct')
         
         # Initialize OpenRouter summarizer
         self.summarizer = OpenRouterSummarizer(model=self.model)
