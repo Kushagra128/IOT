@@ -1,7 +1,311 @@
-/vosk/vosk-model-en-us-0.22-lgraph
-/vosk/vosk-model-small-en-us-0.15
-/vosk/__pycache__
-/vosk/vosk-model-en-in-0.5
-/vosk/vosk-model-small-en-in-0.4
-iot-meeting-minutes\recordings
-iot-meeting-minutes\transcripts
+# ============================================================================
+# .gitignore for Meeting Transcriber
+# Excludes files NOT needed on Raspberry Pi
+# ============================================================================
+
+# ============================================================================
+# FRONTEND (Not needed on Raspberry Pi - runs on laptop)
+# ============================================================================
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+frontend/.vite/
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/pnpm-debug.log*
+frontend/lerna-debug.log*
+frontend/.DS_Store
+frontend/*.local
+
+# ============================================================================
+# PYTHON
+# ============================================================================
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual environments
+backend/venv/
+backend/env/
+backend/ENV/
+venv/
+env/
+ENV/
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
+
+# Environments
+.env
+.env.local
+.env.*.local
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+backend/.env
+backend/.env.local
+
+# ============================================================================
+# DATABASE & RECORDINGS (Generated at runtime)
+# ============================================================================
+*.db
+*.sqlite
+*.sqlite3
+meeting_transcriber.db
+meeting_transcriber.db-journal
+
+# Recordings directory (generated during use)
+iot-meeting-minutes/recordings/
+recordings/
+*.wav
+*.mp3
+*.ogg
+
+# Generated PDFs
+*.pdf
+
+# ============================================================================
+# VOSK MODELS (Too large for git, user downloads separately)
+# ============================================================================
+vosk-model*/
+models/vosk-model*/
+*.zip
+vosk*.zip
+
+# ============================================================================
+# LOGS
+# ============================================================================
+*.log
+logs/
+*.log.*
+/tmp/
+backend.log
+frontend.log
+
+# ============================================================================
+# IDE & EDITOR FILES
+# ============================================================================
+# VSCode
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+.idea_modules/
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+
+# Emacs
+*~
+\#*\#
+.\#*
+
+# ============================================================================
+# OPERATING SYSTEM FILES
+# ============================================================================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.directory
+.Trash-*
+
+# ============================================================================
+# TEMPORARY FILES
+# ============================================================================
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*.orig
+test.wav
+test_*.wav
+
+# ============================================================================
+# NODE.JS (Frontend only - not needed on Pi)
+# ============================================================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.npm
+.eslintcache
+.node_repl_history
+*.tgz
+.yarn-integrity
+.pnp
+.pnp.js
+
+# ============================================================================
+# BUILD ARTIFACTS (Not needed on Pi)
+# ============================================================================
+dist/
+build/
+*.min.js
+*.min.css
+
+# ============================================================================
+# DOCUMENTATION BACKUPS (Keep originals only)
+# ============================================================================
+*.md.backup
+*.txt.backup
+*.yml.backup
+
+# ============================================================================
+# SENSITIVE INFORMATION
+# ============================================================================
+.env
+.env.local
+.env.*.local
+secrets.yml
+config.local.yml
+*.key
+*.pem
+*.cert
+
+# API keys (if stored in files)
+*_api_key.txt
+*_secret.txt
+
+# ============================================================================
+# TESTING & DEVELOPMENT
+# ============================================================================
+test_output/
+test_results/
+.coverage
+htmlcov/
+.pytest_cache/
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# ============================================================================
+# PACKAGE MANAGER LOCKS (Optional - include if you want reproducible builds)
+# ============================================================================
+# Uncomment if you want to ignore lock files
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# ============================================================================
+# RASPBERRY PI SPECIFIC
+# ============================================================================
+# System files that might be created
+.bash_history
+.python_history
+.lesshst
+
+# ============================================================================
+# WHAT TO KEEP (NOT IGNORED)
+# ============================================================================
+# These files ARE needed on Raspberry Pi:
+# - backend/
+# - iot-meeting-minutes/
+# - install_backend_only.sh
+# - verify_setup.sh
+# - start_backend.sh (created by install)
+# - *.md documentation files
+# - requirements_rpi.txt
+# - recorder_config.yml
+
+# ============================================================================
+# SUMMARY
+# ============================================================================
+# This .gitignore excludes:
+# ✅ Frontend files (runs on laptop, not Pi)
+# ✅ Node modules (not needed on Pi)
+# ✅ Virtual environments (created during install)
+# ✅ Database files (created at runtime)
+# ✅ Recordings (generated during use)
+# ✅ Vosk models (too large, downloaded separately)
+# ✅ Logs and temporary files
+# ✅ IDE and OS specific files
+# ✅ Build artifacts
+#
+# What's included (needed on Pi):
+# ✅ backend/ source code
+# ✅ iot-meeting-minutes/ source code
+# ✅ Installation scripts
+# ✅ Configuration files
+# ✅ Documentation
+# ============================================================================

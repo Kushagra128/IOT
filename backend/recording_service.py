@@ -124,6 +124,10 @@ class RecordingService:
                 session_id
             )
             
+            # Get OpenRouter model from config if available
+            openrouter_model = self.config.get('openrouter_model', 'qwen/qwen-2.5-1.5b-instruct')
+            os.environ['OPENROUTER_MODEL'] = openrouter_model
+            
             summarizer = Summarizer(
                 self.config['summarizer'],
                 self.config['extractive_sentences']
@@ -449,12 +453,20 @@ class RecordingService:
             summary_file = None
             
             if transcript_text.strip():
-                summary = session['summarizer'].generate_summary(transcript_text)
-                summary_file = session['summarizer'].save_summary(
-                    summary,
-                    session['session_folder'],
-                    session['session_name']
-                )
+                try:
+                    print("[RecordingService] Generating summary...")
+                    summary = session['summarizer'].generate_summary(transcript_text)
+                    summary_file = session['summarizer'].save_summary(
+                        summary,
+                        session['session_folder'],
+                        session['session_name']
+                    )
+                    print("[RecordingService] Summary generated successfully")
+                except Exception as e:
+                    print(f"[RecordingService] Summary generation failed: {e}")
+                    # Continue without summary - don't crash
+                    summary = "Summary generation failed."
+                    summary_file = None
             else:
                 print("[RecordingService] Transcript still empty – skipping summary generation.")
             

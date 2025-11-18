@@ -7,7 +7,8 @@ mic_device_name: null
 model_path: /home/admin/iot2/models/vosk-model-en-in-0.5
 sample_rate: 16000
 save_dir: recordings
-# Use ollama (OpenRouter backend) for AI summaries
-# Options: ollama (AI), textrank (extractive), t5_small (local AI)
+# Summarizer mode (uses OpenRouter API internally)
 summarizer: ollama
+# OpenRouter model for summarization
+openrouter_model: qwen/qwen-2.5-1.5b-instruct
 wav_format: PCM_16

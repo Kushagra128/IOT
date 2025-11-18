@@ -22,16 +22,14 @@ pyaudio>=0.2.11
 # Speech recognition - Vosk (ARM-compatible)
 vosk>=0.3.45
 
-# Natural language processing
-nltk>=3.8
-scikit-learn>=1.0.0
-numpy>=1.21.0
+# HTTP requests (for OpenRouter API)
+requests>=2.31.0
 
 # Configuration
 PyYAML>=6.0
 
-# HTTP requests
-requests>=2.31.0
+# Environment variables (optional, for .env file support)
+python-dotenv>=1.0.0
 
 # Production server
 gunicorn>=21.2.0
@@ -42,7 +40,5 @@ pydub>=0.25.1
 # Note: Also install ffmpeg system package:
 # sudo apt install ffmpeg
 
-# Note: transformers and torch are heavy for Pi
-# Use textrank summarizer instead of t5_small
-# If you really need transformers, install manually:
-# pip install transformers torch --extra-index-url https://download.pytorch.org/whl/cpu
+# Note: NLTK, scikit-learn, numpy removed - using OpenRouter API for summarization
+# No local NLP processing needed
