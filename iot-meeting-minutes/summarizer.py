@@ -72,7 +72,7 @@ class OpenRouterSummarizer:
                 "messages": [
                     {
                         "role": "system",
-                        "content": "You are a meeting summarizer. Summarize the following transcript clearly and concisely in 2-3 sentences. Focus on key points, decisions, and action items."
+                        "content": "You are a meeting summarizer. Summarize the following transcript clearly and concisely in as much as required sentences, filll the gaps in meetign adn write it better in paragraph form. Focus on key points, decisions, and action items."
                     },
                     {
                         "role": "user",

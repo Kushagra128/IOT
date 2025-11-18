@@ -2,7 +2,7 @@
 # .gitignore for Meeting Transcriber
 # Excludes files NOT needed on Raspberry Pi
 # ============================================================================
-
+backend/.env.example
 # ============================================================================
 # FRONTEND (Not needed on Raspberry Pi - runs on laptop)
 # ============================================================================
