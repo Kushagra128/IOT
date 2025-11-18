@@ -36,7 +36,7 @@ class OpenRouterSummarizer:
         # Get API key from environment or use default
         self.api_key = os.getenv(
             'OPENROUTER_API_KEY',
-            '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'
+            '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'
         )
         
         self.api_url = "https://openrouter.ai/api/v1/chat/completions"
